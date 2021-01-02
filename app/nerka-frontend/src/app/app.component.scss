@@ -1,0 +1,17 @@
+:host {
+  font-family: Verdana, Arial, sans-serif;
+
+  .file-upload-container {
+    margin: 10px 20px;
+
+    .file-upload-label {
+      font-size: 20px;
+
+      margin-bottom: 10px;
+    }
+
+    .points-count-label {
+      margin-top: 10px;
+    }
+  }
+}
