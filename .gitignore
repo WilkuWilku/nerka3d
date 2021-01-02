@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# dane matlabowe do konwersji
+data/*.mat
+
+# dane przekonwertowane
+data/output/
