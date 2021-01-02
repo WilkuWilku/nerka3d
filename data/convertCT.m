@@ -1,3 +1,5 @@
+% przykladowa konwersja z data/ct7b.mat -> data/output/ct7b_x.json, gdzie x to kolejna warstwa skanu
+
 input_file_name = 'ct7b.mat';
 output_file_name_base = extractBefore(input_file_name, '.mat');
 

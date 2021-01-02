@@ -107,4 +107,4 @@ dist
 data/*.mat
 
 # dane przekonwertowane
-data/output/
+data/output/*.json
