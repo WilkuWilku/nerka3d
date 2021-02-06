@@ -3,15 +3,17 @@ import {
   AxesHelper,
   BufferGeometry,
   Color,
-  GridHelper,
+  GridHelper, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
   PerspectiveCamera,
   Points, PointsMaterial,
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+} from "three";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {TriangleService} from "./triangle.service";
 import {DataLoader} from './dataLoader/dataLoader';
+import {CtlReaderService} from "./dataLoader/ctl-reader.service";
 
 @Component({
   selector: 'app-root',
@@ -26,6 +28,10 @@ export class AppComponent implements OnInit {
   points: Points;
   pointsCount = 0;
   controls: OrbitControls;
+
+  constructor(private triangleService: TriangleService, private ctlReaderService: CtlReaderService) {
+  }
+
 
   ngOnInit(): void {
     this.renderer = new WebGLRenderer();
@@ -51,6 +57,10 @@ export class AppComponent implements OnInit {
     this.scene.add(axesHelper, gridHelper);
     this.renderer.render( this.scene, this.camera );
 
+    this.points = this.triangleService.createMockLayeredPoints();
+    this.scene.add(this.points);
+
+
     this.animate();
   }
 
@@ -63,7 +73,9 @@ export class AppComponent implements OnInit {
   onFileUpload(event) {
     this.scene.remove(this.points);
     //TODO: make density and layer spacing configurable by user
-    [this.points, this.pointsCount] = DataLoader.convertJsonToKidneyLayers(event, 5, 150);
+    // [this.points, this.pointsCount] = DataLoader.convertJsonToKidneyLayers(event, 5, 150);
+    // this.scene.add(this.points);
+    [this.points, this.pointsCount] = this.ctlReaderService.convertCtlFileToPoints(event.target.files)
     this.scene.add(this.points);
   }
 }
