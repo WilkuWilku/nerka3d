@@ -1,17 +1,50 @@
 :host {
   font-family: Verdana, Arial, sans-serif;
 
-  .file-upload-container {
-    margin: 10px 20px;
+  .app-container {
+    display: flex;
 
-    .file-upload-label {
-      font-size: 20px;
+    .parameters-section {
+      width: 20%;
 
-      margin-bottom: 10px;
+      .layers-list {
+        margin: 30px 0 0 20px;
+
+        .layers-list-title {
+          font-size: 18px;
+          margin: 5px 0;
+        }
+
+        .layer-list-item {
+          margin: 4px 0;
+        }
+
+        .layer-list-item-name {
+          margin-left: 10px;
+        }
+      }
     }
 
-    .points-count-label {
-      margin-top: 10px;
+    .file-upload-container {
+      margin: 10px 20px;
+
+      .file-upload-label {
+        font-size: 20px;
+
+        margin-bottom: 10px;
+      }
+
+      .points-count-label {
+        margin-top: 10px;
+      }
+    }
+
+    .three-container {
+
     }
   }
+
+
+
+
 }

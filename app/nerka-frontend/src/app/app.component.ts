@@ -1,19 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {
-  AxesHelper,
-  BufferGeometry,
-  Color,
-  GridHelper, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
-  PerspectiveCamera,
-  Points, PointsMaterial,
-  Scene,
-  Vector3,
-  WebGLRenderer
-} from "three";
+import {AxesHelper, Color, GridHelper, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {TriangleService} from "./triangle.service";
-import {DataLoader} from './dataLoader/dataLoader';
-import {CtlReaderService} from "./dataLoader/ctl-reader.service";
+import {KidneyLayerData} from "./dto/kidneyLayerData";
+import {KidneyDataLoaderService} from "./dataLoader/kidney-data-loader.service";
 
 @Component({
   selector: 'app-root',
@@ -25,18 +15,22 @@ export class AppComponent implements OnInit {
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
-  points: Points;
   pointsCount = 0;
   controls: OrbitControls;
 
-  constructor(private triangleService: TriangleService, private ctlReaderService: CtlReaderService) {
+  pointsReductionRatio: number = 1;
+  distanceBetweenLayers: number = 180;
+  loadedKidneyLayers: KidneyLayerData[] = [];
+
+  constructor(private triangleService: TriangleService,
+              private kidneyDataLoaderService: KidneyDataLoaderService) {
   }
 
 
   ngOnInit(): void {
     this.renderer = new WebGLRenderer();
     this.renderer.setSize(window.innerWidth * 0.75, window.innerHeight * 0.75);
-    document.body.appendChild(this.renderer.domElement);
+    document.body.getElementsByClassName("three-container")[0].appendChild(this.renderer.domElement);
 
     this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 30000);
     this.camera.position.set(-1000, 1500, -1000);
@@ -48,18 +42,8 @@ export class AppComponent implements OnInit {
     this.scene = new Scene();
     this.scene.background = new Color(0xf2f2f2);
 
-    const axesHelper = new AxesHelper(10);
-
-    const gridHelper = new GridHelper(5000, 10);
-    gridHelper.translateX(2500);
-    gridHelper.translateZ(2500);
-
-    this.scene.add(axesHelper, gridHelper);
+    this.refreshScene();
     this.renderer.render( this.scene, this.camera );
-
-    this.points = this.triangleService.createMockLayeredPoints();
-    this.scene.add(this.points);
-
 
     this.animate();
   }
@@ -71,11 +55,44 @@ export class AppComponent implements OnInit {
   }
 
   onFileUpload(event) {
-    this.scene.remove(this.points);
-    //TODO: make density and layer spacing configurable by user
-    // [this.points, this.pointsCount] = DataLoader.convertJsonToKidneyLayers(event, 5, 150);
-    // this.scene.add(this.points);
-    [this.points, this.pointsCount] = this.ctlReaderService.convertCtlFileToPoints(event.target.files)
-    this.scene.add(this.points);
+    //todo: zarządzanie pamięcią - po ponownym załadowaniu tych samych plików, dane z poprzednich wciąż są zaalokowane
+    this.loadedKidneyLayers = [];
+    this.kidneyDataLoaderService.loadKidneyData(event.target.files, this.pointsReductionRatio, this.distanceBetweenLayers)
+      .subscribe(
+        loadedLayer => this.loadedKidneyLayers.push(loadedLayer),
+        errorMsg => console.error(errorMsg),
+        () => this.refreshScene()
+      )
   }
+
+  onLayerVisibilityChanged() {
+    this.refreshScene();
+  }
+
+  refreshScene() {
+    this.scene.clear();
+    const axesHelper = new AxesHelper(10);
+    const gridHelper = new GridHelper(5000, 10);
+    gridHelper.translateX(2500);
+    gridHelper.translateZ(2500);
+    this.scene.add(axesHelper, gridHelper);
+
+    this.loadedKidneyLayers.forEach(layerData => {
+      if(layerData.isVisible) {
+        this.scene.add(layerData.layerPoints)
+      }
+    });
+  }
+
+  setLayersOrder() {
+    const orderedLayers = this.loadedKidneyLayers.sort((layer1, layer2) => {
+        return parseInt(layer1.rawLayer.header.layerNumber) - parseInt(layer2.rawLayer.header.layerNumber)
+      }
+    )
+    orderedLayers.forEach((layer, index) => {
+      layer.layerHeight = index * this.distanceBetweenLayers;
+    })
+    this.loadedKidneyLayers = orderedLayers;
+  }
+
 }

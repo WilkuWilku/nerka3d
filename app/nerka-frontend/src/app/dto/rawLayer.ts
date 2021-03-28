@@ -1,15 +1,15 @@
-export class Layer {
+export class RawLayer {
 
-  constructor(header: LayerHeader, data: number[][]) {
+  constructor(header: RawLayerHeader, data: number[][]) {
     this.header = header;
     this.data = data;
   }
 
-  header: LayerHeader
+  header: RawLayerHeader
   data: number[][]
 }
 
-export class LayerHeader {
+export class RawLayerHeader {
   constructor(fileName: string, objectType: string, layerNumber: string, multipliedLayerIndex: string) {
     this.fileName = fileName;
     this.objectType = objectType;

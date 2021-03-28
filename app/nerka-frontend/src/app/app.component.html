@@ -1,5 +1,21 @@
-<div class="file-upload-container">
-  <div class="file-upload-label">Wybierz plik z danymi:</div>
-  <input type="file" multiple (change)="onFileUpload($event)" accept=".ctl"/>
-  <div class="points-count-label">Załadowanych punktów: {{pointsCount}}</div>
+<div class="app-container">
+
+  <div class="parameters-section">
+    <div class="file-upload-container">
+      <div class="file-upload-label">Wybierz plik z danymi:</div>
+      <input type="file" multiple (change)="onFileUpload($event)" accept=".ctl"/>
+      <div class="points-count-label">Załadowanych punktów: {{pointsCount}}</div>
+    </div>
+    <div class="layers-list" *ngIf="loadedKidneyLayers.length > 0">
+      <span class="layers-list-title">WARSTWY</span>
+      <div class="layer-list-item" *ngFor="let layer of loadedKidneyLayers">
+        <input type="checkbox" [(ngModel)]="layer.isVisible" (ngModelChange)="onLayerVisibilityChanged()">
+        <span class="layer-list-item-name">{{layer.layerName}} / {{layer.rawLayer.header.objectType}} / {{layer.rawLayer.header.layerNumber}}-{{layer.rawLayer.header.multipliedLayerIndex}}</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="three-container">
+    NERKA 3D
+  </div>
 </div>
