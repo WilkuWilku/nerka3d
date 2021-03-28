@@ -27,7 +27,6 @@ export class CtlReaderService {
   }
 
   public parseLayer(compressedLayerData: string): RawLayer {
-    console.log("parseLayer START")
     let layerData = [];
     const layerElements = compressedLayerData.split("\n");
     const layerHeaderString = layerElements[0].split(".ctl")[0];
@@ -36,13 +35,9 @@ export class CtlReaderService {
       const rowData = this.parseRow(value);
       layerData.push(rowData);
     });
-    console.log("parseLayer layerHeaderString", layerHeaderString)
     const [fileName, objectType, layerIndexData] = layerHeaderString.split("_");
-    console.log("parseLayer parsed", fileName, objectType, layerIndexData)
     const [layerNumber, multipliedLayerIndex] = layerIndexData.split("-");
-    console.log("parseLayer data", layerData)
     const layerHeader = new RawLayerHeader(fileName, objectType, layerNumber, multipliedLayerIndex);
-    console.log("parseLayer END")
     return new RawLayer(layerHeader,  layerData);
   }
 
