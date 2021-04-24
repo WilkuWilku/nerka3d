@@ -1,5 +1,12 @@
 import {Component, OnInit} from '@angular/core';
-import {AxesHelper, Color, GridHelper, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {
+  AxesHelper,
+  Color,
+  GridHelper,
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer
+} from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {TriangleService} from "./triangle.service";
 import {KidneyLayerData} from "./dto/kidneyLayerData";
@@ -17,9 +24,10 @@ export class AppComponent implements OnInit {
   renderer: WebGLRenderer;
   pointsCount = 0;
   controls: OrbitControls;
+  layersTranslationData: Map<number, Array<number>> = new Map(); // Map<layerNumber, [X, Y, Z]>
 
   pointsReductionRatio: number = 1;
-  distanceBetweenLayers: number = 180;
+  distanceBetweenLayers: number = 200;
   loadedKidneyLayers: KidneyLayerData[] = [];
 
   constructor(private triangleService: TriangleService,
@@ -59,9 +67,20 @@ export class AppComponent implements OnInit {
     this.loadedKidneyLayers = [];
     this.kidneyDataLoaderService.loadKidneyData(event.target.files, this.pointsReductionRatio, this.distanceBetweenLayers)
       .subscribe(
-        loadedLayer => this.loadedKidneyLayers.push(loadedLayer),
+        loadedDataPart => {
+          if(loadedDataPart instanceof KidneyLayerData) {
+            console.log("Loaded part is KidneyLayerData")
+            this.loadedKidneyLayers.push(loadedDataPart)
+          } else if(loadedDataPart instanceof Map) {
+            console.log("Loaded part is Map")
+            this.layersTranslationData = loadedDataPart;
+          }
+        },
         errorMsg => console.error(errorMsg),
-        () => this.refreshScene()
+        () => {
+          this.translateLayers();
+          this.refreshScene()
+        }
       )
   }
 
@@ -93,6 +112,18 @@ export class AppComponent implements OnInit {
       layer.layerHeight = index * this.distanceBetweenLayers;
     })
     this.loadedKidneyLayers = orderedLayers;
+  }
+
+  translateLayers() {
+    this.layersTranslationData.forEach(([x,y,z], key) => {
+      this.loadedKidneyLayers.filter(layer => layer.rawLayer.header.layerNumber == key.toString())
+        .forEach(layer => {
+          layer.layerPoints = layer.layerPoints
+            .translateX(x)
+            .translateY(z) // z <-> y, bo dla threejs "y" to wysokość
+            .translateZ(y)
+        })
+    })
   }
 
 }

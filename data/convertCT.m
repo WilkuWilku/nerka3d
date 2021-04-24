@@ -3,11 +3,21 @@
 % x -> numer warstwy
 % y -> numer skanu dla danego typu i warstwy
 
-function convertCT(input_file_name)
-    fprintf('Processing file: %s\n', input_file_name);
-    output_file_name_base = extractBefore(input_file_name, '.mat');
-
-    load(input_file_name);
+function convertCT(ct_input_file_name, layer_translation_file_name)
+    fprintf('Processing file: %s\n', ct_input_file_name);
+    output_file_name_base = extractBefore(ct_input_file_name, '.mat');
+    
+    if ~exist('output')
+        fprintf('Directory "output" does not exist. Creating new...\n');
+        mkdir('output')
+    end
+    
+    if ~exist(strcat('output/',output_file_name_base))
+        fprintf('Directory "output/%s" does not exist. Creating new...\n', output_file_name_base);
+        mkdir(strcat('output/',output_file_name_base))
+    end 
+        
+    load(ct_input_file_name);
     result = {};
     layer_number = 0;
     for i = 1:length(R)
@@ -28,8 +38,8 @@ function convertCT(input_file_name)
                        if ~isempty(R{i}{j}{k}) && strcmp(R{i}{j}{k+1},'nerka')
                            result = R{i}{j}{k};
                            new_output_file_name = sprintf('%s_kidney_%d-%d.ctl', output_file_name_base, layer_number, kidney_layer_index);
-                           fprintf('Adding R{%d}{%d}{%d} to file %s\n', i, j, k, strcat('output/',new_output_file_name));
-                           output_file = fopen(strcat('output/',new_output_file_name), 'w');
+                           fprintf('Adding R{%d}{%d}{%d} to file %s\n', i, j, k, strcat('output/',output_file_name_base,'/',new_output_file_name));
+                           output_file = fopen(strcat('output/',output_file_name_base,'/',new_output_file_name), 'w');
                            fprintf(output_file, rleCompressLayer(result, new_output_file_name));
                            kidney_layer_index = kidney_layer_index + 1;
                        end
@@ -38,8 +48,8 @@ function convertCT(input_file_name)
                        if ~isempty(R{i}{j}{k}) && strcmp(R{i}{j}{k+1},'Cancer')
                            result = R{i}{j}{k};
                            new_output_file_name = sprintf('%s_cancer_%d-%d.ctl', output_file_name_base, layer_number, cancer_layer_index);
-                           fprintf('Adding R{%d}{%d}{%d} to file %s\n', i, j, k, strcat('output/',new_output_file_name));
-                           output_file = fopen(strcat('output/',new_output_file_name), 'w');
+                           fprintf('Adding R{%d}{%d}{%d} to file %s\n', i, j, k, strcat('output/',output_file_name_base,'/',new_output_file_name));
+                           output_file = fopen(strcat('output/',output_file_name_base,'/',new_output_file_name), 'w');
                            fprintf(output_file, rleCompressLayer(result, new_output_file_name));
                            cancer_layer_index = cancer_layer_index + 1;
                        end
@@ -50,4 +60,8 @@ function convertCT(input_file_name)
 
        end
     end
+    
+    processLayersTranslation(layer_translation_file_name, strcat('output/',output_file_name_base));
+    
+    
 end

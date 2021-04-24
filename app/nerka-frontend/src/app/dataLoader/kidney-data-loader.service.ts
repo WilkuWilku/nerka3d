@@ -13,18 +13,25 @@ export class KidneyDataLoaderService {
 
   constructor(private ctlReaderService: CtlReaderService) { }
 
-  public loadKidneyData(files, pointsReductionRatio: number, distanceBetweenLayers: number): Observable<KidneyLayerData> {
+  public loadKidneyData(files, pointsReductionRatio: number, distanceBetweenLayers: number): Observable<any> {
     return new Observable(subscriber => {
       const filesLoaded: boolean[] = new Array(files.length).fill(false);
       for (let i = 0; i < files.length; i++) {
         const fileReader = new FileReader();
         fileReader.onload = () => {
-          const rawLayer: RawLayer = this.ctlReaderService.parseLayer(fileReader.result.toString())
-          const layerData: KidneyLayerData = this.createKidneyLayerData(rawLayer, pointsReductionRatio, distanceBetweenLayers);
-          filesLoaded[i] = true;
-          subscriber.next(layerData);
-
-          if(filesLoaded.every(loaded => loaded === true)) {
+          if(files[i].name.endsWith('.ctl')) {
+            const rawLayer: RawLayer = this.ctlReaderService.parseLayer(fileReader.result.toString())
+            const layerData: KidneyLayerData = this.createKidneyLayerData(rawLayer, pointsReductionRatio, distanceBetweenLayers);
+            filesLoaded[i] = true;
+            subscriber.next(layerData);
+          } else if(files[i].name.endsWith('.json')) {
+            const translationDataFromFile = JSON.parse(fileReader.result.toString())
+            let layersTranslationsData: Map<number, Array<number>>; // Map<layerNumber, [X, Y, Z]>
+            layersTranslationsData = this.loadLayersTranslations(translationDataFromFile);
+            filesLoaded[i] = true;
+            subscriber.next(layersTranslationsData);
+          }
+          if (filesLoaded.every(loaded => loaded === true)) {
             subscriber.complete();
           }
         }
@@ -34,7 +41,7 @@ export class KidneyDataLoaderService {
   }
 
   private createKidneyLayerData(rawLayer: RawLayer, pointsReductionRatio: number, distanceBetweenLayers: number): KidneyLayerData {
-    const pointsCoords = [];
+    const pointsCoords : Vector3[] = [];
     const layerHeight = parseInt(rawLayer.header.layerNumber) * distanceBetweenLayers;
     const layerData = rawLayer.data;
 
@@ -86,6 +93,14 @@ export class KidneyDataLoaderService {
     }
     // undefined object
     return 0x696969;
+  }
+
+  private loadLayersTranslations(translationsData: Array<Array<number>>): Map<number, Array<number>>{
+    let layersTranslationsData: Map<number, Array<number>> = new Map(); // Map<layerNumber, [X, Y, Z]>
+    translationsData.forEach((value, index) => {
+      layersTranslationsData.set(index, value);
+    })
+    return layersTranslationsData;
   }
 
 }
