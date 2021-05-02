@@ -1,16 +1,17 @@
 import {Component, OnInit} from '@angular/core';
 import {
-  AxesHelper,
+  AxesHelper, BufferGeometry,
   Color,
   GridHelper,
-  PerspectiveCamera,
-  Scene,
+  PerspectiveCamera, Points, PointsMaterial,
+  Scene, Vector3,
   WebGLRenderer
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {TriangleService} from "./triangle.service";
 import {KidneyLayerData} from "./dto/kidneyLayerData";
 import {KidneyDataLoaderService} from "./dataLoader/kidney-data-loader.service";
+import {BackendDataLoaderService} from "./dataLoader/backend-data-loader.service";
 
 @Component({
   selector: 'app-root',
@@ -31,7 +32,8 @@ export class AppComponent implements OnInit {
   loadedKidneyLayers: KidneyLayerData[] = [];
 
   constructor(private triangleService: TriangleService,
-              private kidneyDataLoaderService: KidneyDataLoaderService) {
+              private kidneyDataLoaderService: KidneyDataLoaderService,
+              private backendDataLoaderService: BackendDataLoaderService) {
   }
 
 
@@ -54,6 +56,21 @@ export class AppComponent implements OnInit {
     this.renderer.render( this.scene, this.camera );
 
     this.animate();
+
+
+    // test pobierania danych z backendu
+    this.backendDataLoaderService.getTestLayers().subscribe(response => {
+      let pointsCoords: Vector3[] = [];
+      response.forEach(layer => {
+        layer.points.map(point => {
+          pointsCoords.push(new Vector3(point.x, point.height, point.y));
+        })
+      })
+      const pointsGeometry = new BufferGeometry().setFromPoints(pointsCoords);
+      const material = new PointsMaterial({color: 0x8d34ff, size: 10});
+      const points = new Points(pointsGeometry, material)
+      this.scene.add(points);
+    })
   }
 
   animate() {
@@ -70,6 +87,7 @@ export class AppComponent implements OnInit {
         loadedDataPart => {
           if(loadedDataPart instanceof KidneyLayerData) {
             console.log("Loaded part is KidneyLayerData")
+            loadedDataPart.rawLayer.data = null; // dla oszczędności RAMu
             this.loadedKidneyLayers.push(loadedDataPart)
           } else if(loadedDataPart instanceof Map) {
             console.log("Loaded part is Map")
@@ -103,26 +121,19 @@ export class AppComponent implements OnInit {
     });
   }
 
-  setLayersOrder() {
-    const orderedLayers = this.loadedKidneyLayers.sort((layer1, layer2) => {
-        return parseInt(layer1.rawLayer.header.layerNumber) - parseInt(layer2.rawLayer.header.layerNumber)
-      }
-    )
-    orderedLayers.forEach((layer, index) => {
-      layer.layerHeight = index * this.distanceBetweenLayers;
-    })
-    this.loadedKidneyLayers = orderedLayers;
-  }
-
   translateLayers() {
     this.layersTranslationData.forEach(([x,y,z], key) => {
-      this.loadedKidneyLayers.filter(layer => layer.rawLayer.header.layerNumber == key.toString())
+      this.loadedKidneyLayers.filter(layer => parseInt(layer.rawLayer.header.layerNumber) == key + 1 )
         .forEach(layer => {
-          layer.layerPoints = layer.layerPoints
-            .translateX(x)
-            .translateY(z) // z <-> y, bo dla threejs "y" to wysokość
-            .translateZ(y)
+          console.log("translation", layer.rawLayer.header)
+          // if(x && y && z) {
+            // layer.layerPoints = layer.layerPoints
+              // .translateX(-y)
+              // .translateY(z) // z <-> y, bo dla threejs "y" to wysokość
+              // .translateZ(-x)
+          // }
         })
+
     })
   }
 
