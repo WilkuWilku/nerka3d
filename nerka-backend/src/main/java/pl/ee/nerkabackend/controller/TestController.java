@@ -49,7 +49,7 @@ public class TestController {
                 "/ct23a/ct23a_kidney_5-0.ctl",
                 "/ct23a/ct23a_kidney_6-0.ctl",
                 "/ct23a/ct23a_kidney_7-0.ctl");
-        List<LayerDTO> layers = kidneyProcessingService.loadKidneyLayers(layersToLoad, 100);
+        List<LayerDTO> layers = kidneyProcessingService.loadKidneyLayers(layersToLoad, 3);
         return ResponseEntity.ok(layers);
     }
 }
