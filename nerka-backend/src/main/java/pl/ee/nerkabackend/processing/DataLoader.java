@@ -1,9 +1,9 @@
-package pl.ee.nerkabackend.service;
+package pl.ee.nerkabackend.processing;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pl.ee.nerkabackend.dto.LayerHeader;
-import pl.ee.nerkabackend.dto.RawLayerDTO;
+import pl.ee.nerkabackend.processing.model.LayerHeader;
+import pl.ee.nerkabackend.processing.model.RawLayer;
 import pl.ee.nerkabackend.exception.NoDataException;
 
 import java.io.*;
@@ -12,17 +12,17 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class CtlParserService {
+public class DataLoader {
 
-    public RawLayerDTO loadKidneyDataFromFile(String filename) throws IOException, NoDataException {
+    public RawLayer loadKidneyDataFromFile(String filename) throws IOException, NoDataException {
         log.info("loadKidneyDataFromFile() start - filename: {}", filename);
         InputStream inputStream = Optional.ofNullable(getClass().getResourceAsStream(filename))
                 .orElseThrow(() -> new FileNotFoundException(filename));
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            RawLayerDTO kidneyLayer = new RawLayerDTO();
+            RawLayer kidneyLayer = new RawLayer();
 
             String header = Optional.ofNullable(reader.readLine())
-                    .orElseThrow(() -> new NoDataException("No data found in file: "+filename));
+                .orElseThrow(() -> new NoDataException("No data found in file: "+filename));
             LayerHeader layerHeader = parseHeader(header);
 
             kidneyLayer.setName(layerHeader.getName());
@@ -35,11 +35,11 @@ public class CtlParserService {
             }
             int[][] rawLayerData = new int[4000][6000];
             layerData.stream()
-                    .map(row -> row.stream()
-                            .mapToInt(Integer::intValue)
-                            .toArray())
-                    .collect(Collectors.toList())
-                    .toArray(rawLayerData);
+                .map(row -> row.stream()
+                    .mapToInt(Integer::intValue)
+                    .toArray())
+                .collect(Collectors.toList())
+                .toArray(rawLayerData);
 
             int[][] kidneyBorderLayerData = getBorder(rawLayerData);
 
@@ -53,10 +53,10 @@ public class CtlParserService {
 
     private List<Integer> parseRow(String inputRowData) {
         int[] compressedRowData = Arrays.stream(inputRowData.split(";"))
-                .mapToInt(Integer::parseInt)
-                .toArray();
+            .mapToInt(Integer::parseInt)
+            .toArray();
         List<Integer> row = new ArrayList<>();
-        for(int i = 0; i < compressedRowData.length; i++) {
+        for (int i = 0; i < compressedRowData.length; i++) {
             Integer[] rowData = new Integer[compressedRowData[i]];
             Arrays.fill(rowData, i % 2);
             row.addAll(Arrays.asList(rowData));
@@ -86,9 +86,9 @@ public class CtlParserService {
 
     private int[][] getBorder(int[][] layerData) {
         int[][] borderData = new int[4000][6000];
-        for(int i = 0; i < layerData.length-1; i++) {
-            for(int j = 0; j < layerData[i].length; j++) {
-                if(layerData[i][j] == 1 && isBorder(layerData, i, j)) {
+        for (int i = 0; i < layerData.length-1; i++) {
+            for (int j = 0; j < layerData[i].length; j++) {
+                if (layerData[i][j] == 1 && isBorder(layerData, i, j)) {
                     borderData[i][j] = 1;
                 } else {
                     borderData[i][j] = 0;
@@ -100,12 +100,12 @@ public class CtlParserService {
 
     private boolean isBorder(int[][] layerData, int x, int y) {
         return layerData[x+1][y] == 0
-                || layerData[x+1][y+1] == 0
-                || layerData[x+1][y-1] == 0
-                || layerData[x-1][y] == 0
-                || layerData[x-1][y+1] == 0
-                || layerData[x-1][y-1] == 0
-                || layerData[x][y+1] == 0
-                || layerData[x][y-1] == 0;
+            || layerData[x+1][y+1] == 0
+            || layerData[x+1][y-1] == 0
+            || layerData[x-1][y] == 0
+            || layerData[x-1][y+1] == 0
+            || layerData[x-1][y-1] == 0
+            || layerData[x][y+1] == 0
+            || layerData[x][y-1] == 0;
     }
 }

@@ -1,4 +1,4 @@
-package pl.ee.nerkabackend.dto;
+package pl.ee.nerkabackend.processing.model;
 
 import lombok.Data;
 

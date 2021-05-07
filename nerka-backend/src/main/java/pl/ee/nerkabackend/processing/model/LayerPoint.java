@@ -1,16 +1,16 @@
-package pl.ee.nerkabackend.dto;
+package pl.ee.nerkabackend.processing.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class LayerPointDTO {
+public class LayerPoint {
     private int x;
     private int y;
     private int height;
 
-    public LayerPointDTO(LayerPointDTO point) {
+    public LayerPoint(LayerPoint point) {
         this.x = point.getX();
         this.y = point.getY();
         this.height = point.getHeight();

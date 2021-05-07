@@ -1,9 +1,9 @@
-package pl.ee.nerkabackend.dto;
+package pl.ee.nerkabackend.processing.model;
 
 import lombok.Data;
 
 @Data
-public class RawLayerDTO {
+public class RawLayer {
     private int[][] data;
     private int index;
     private int layerNumber;
