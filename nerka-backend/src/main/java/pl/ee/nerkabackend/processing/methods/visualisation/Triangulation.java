@@ -5,7 +5,7 @@ import pl.ee.nerkabackend.processing.model.Layer;
 
 import java.util.List;
 
-public class Triangularization implements VisualisationMethod {
+public class Triangulation implements VisualisationMethod {
 
     @Override
     public KidneyVisualisationObject getKidneyVisualisationObject(List<Layer> layers, Object... params) {

@@ -2,22 +2,20 @@ package pl.ee.nerkabackend.processing.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import pl.ee.nerkabackend.processing.methods.MethodProvider;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
+import pl.ee.nerkabackend.processing.methods.borderpoint.BorderPointSelector;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.RawLayer;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.exception.LayerProcessingException;
-import pl.ee.nerkabackend.exception.NoDataException;
-import pl.ee.nerkabackend.processing.DataLoader;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @Slf4j
@@ -25,6 +23,10 @@ public class LayerProcessingService {
 
     @Value("${kidney.distance.between.layers}")
     private Integer distanceBetweenLayers;
+
+    @Qualifier("topBorderPointSelector")
+    @Autowired
+    private BorderPointSelector borderPointSelector;
 
     public Layer processLayer(RawLayer rawLayer, MethodTypes.PointsDeterminationMethodType type, Object... params) {
         List<LayerPoint> orderedPoints = getOrderedPoints(rawLayer);
@@ -61,7 +63,7 @@ public class LayerProcessingService {
                 .count();
         log.info("getOrderedPoints() points count before ordering: {}", pointsCount);
 
-        LayerPoint currentPoint = selectFirstPoint(kidneyLayer);
+        LayerPoint currentPoint = borderPointSelector.getBorderPoint(kidneyLayer, null);
         LayerPoint nextPoint;
 
         while((nextPoint = getNextPoint(currentPoint.getX(), currentPoint.getY(), kidneyLayer)) != null) {
@@ -78,19 +80,6 @@ public class LayerProcessingService {
 
         log.info("getOrderedPoints() end - border ordered points count: {}", orderedPoints.size());
         return orderedPoints;
-    }
-
-    private LayerPoint selectFirstPoint(RawLayer rawLayer) {
-        Random random = new Random();
-        int x, y;
-        int attemptCounter = 0;
-        do {
-            x = random.nextInt(4000);
-            y = random.nextInt(6000);
-            attemptCounter++;
-        } while (rawLayer.getData()[x][y] != 1);
-        log.info("selectFirstPoint() - first point: x={}, y={} [attempt #{}]", x, y, attemptCounter);
-        return new LayerPoint(x, y, rawLayer.getLayerNumber()*distanceBetweenLayers);
     }
 
     private LayerPoint getNextPoint(int x, int y, RawLayer rawLayer) {

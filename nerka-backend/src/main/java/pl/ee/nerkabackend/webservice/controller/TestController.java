@@ -6,13 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.model.Layer;
-import pl.ee.nerkabackend.processing.model.RawLayer;
-import pl.ee.nerkabackend.processing.model.LayerPoint;
-import pl.ee.nerkabackend.exception.NoDataException;
 import pl.ee.nerkabackend.processing.service.KidneyProcessingService;
-import pl.ee.nerkabackend.processing.service.LayerProcessingService;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -30,9 +25,14 @@ public class TestController {
                 "/ct23a/ct23a_kidney_4-0.ctl",
                 "/ct23a/ct23a_kidney_5-0.ctl",
                 "/ct23a/ct23a_kidney_6-0.ctl",
-                "/ct23a/ct23a_kidney_7-0.ctl");
+                "/ct23a/ct23a_kidney_7-0.ctl",
+                "/ct23a/ct23a_kidney_8-0.ctl",
+                "/ct23a/ct23a_kidney_9-0.ctl",
+                "/ct23a/ct23a_kidney_10-0.ctl",
+                "/ct23a/ct23a_kidney_11-0.ctl",
+                "/ct23a/ct23a_kidney_12-0.ctl");
         List<Layer> layers = kidneyProcessingService.getKidneyLayers(layersToLoad,
-                MethodTypes.KidneyVisualisationMethodType.TRIANGULARIZATION, 3.0);
+                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 1.5);
         return ResponseEntity.ok(layers);
     }
 }

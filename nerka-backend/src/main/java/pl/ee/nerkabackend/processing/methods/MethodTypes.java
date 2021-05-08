@@ -1,6 +1,5 @@
 package pl.ee.nerkabackend.processing.methods;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +10,12 @@ public class MethodTypes {
     }
 
     public enum VisualisationMethodType {
-        TRIANGULARIZATION,
+        TRIANGULATION,
         PLACEHOLDER_METHOD
     }
 
     public enum KidneyVisualisationMethodType {
-        TRIANGULARIZATION(VisualisationMethodType.TRIANGULARIZATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED);
+        TRIANGULATION(VisualisationMethodType.TRIANGULATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED);
 
         @Getter
         @Setter
