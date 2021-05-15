@@ -24,7 +24,7 @@ public class LayerProcessingService {
     @Value("${kidney.distance.between.layers}")
     private Integer distanceBetweenLayers;
 
-    @Qualifier("topBorderPointSelector")
+    @Qualifier("bottomBorderPointSelector")
     @Autowired
     private BorderPointSelector borderPointSelector;
 

@@ -4,6 +4,7 @@ import {Observable} from "rxjs";
 import {RawLayerFromBackend} from "../dto/rawLayerFromBackend";
 import {LayerPoint} from "../dto/layerPoint";
 import {Layer} from "../dto/layer";
+import {Triangle} from "../dto/triangle";
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,18 @@ export class BackendDataLoaderService {
 
   public getTestLayers(): Observable<Layer[]> {
     return this.http.get<Layer[]>("/api/layers");
+  }
+
+  public getTestTriangles(): Observable<Triangle[]> {
+    return this.http.get<Triangle[]>("/api/triangles");
+  }
+
+  public getTrianglesFromFiles(files): Observable<Triangle[]> {
+    let formData = new FormData();
+    for(let i=0; i<files.length; i++) {
+      formData.append("files", files[i]);
+    }
+    return this.http.post<Triangle[]>("/api/trianglesFromFiles", formData);
   }
 
 }

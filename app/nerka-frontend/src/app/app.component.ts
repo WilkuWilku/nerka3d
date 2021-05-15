@@ -1,17 +1,26 @@
 import {Component, OnInit} from '@angular/core';
 import {
-  AxesHelper, BufferGeometry,
+  AxesHelper,
+  BufferGeometry,
   Color,
+  Face3,
+  Geometry,
   GridHelper,
-  PerspectiveCamera, Points, PointsMaterial,
-  Scene, Vector3,
+  Mesh,
+  MeshStandardMaterial,
+  PerspectiveCamera, PointLight,
+  Points,
+  PointsMaterial,
+  Scene,
+  Vector3,
   WebGLRenderer
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {TriangleService} from "./triangle.service";
 import {KidneyLayerData} from "./dto/kidneyLayerData";
 import {KidneyDataLoaderService} from "./dataLoader/kidney-data-loader.service";
 import {BackendDataLoaderService} from "./dataLoader/backend-data-loader.service";
+import {Triangle} from "./dto/triangle";
+import {Layer} from "./dto/layer";
 
 @Component({
   selector: 'app-root',
@@ -25,14 +34,10 @@ export class AppComponent implements OnInit {
   renderer: WebGLRenderer;
   pointsCount = 0;
   controls: OrbitControls;
-  layersTranslationData: Map<number, Array<number>> = new Map(); // Map<layerNumber, [X, Y, Z]>
 
-  pointsReductionRatio: number = 1;
-  distanceBetweenLayers: number = 200;
   loadedKidneyLayers: KidneyLayerData[] = [];
 
-  constructor(private triangleService: TriangleService,
-              private kidneyDataLoaderService: KidneyDataLoaderService,
+  constructor(private kidneyDataLoaderService: KidneyDataLoaderService,
               private backendDataLoaderService: BackendDataLoaderService) {
   }
 
@@ -57,20 +62,14 @@ export class AppComponent implements OnInit {
 
     this.animate();
 
+    // this.backendDataLoaderService.getTestLayers().subscribe(response => {
+    //   this.drawLayersPoints(response);
+    // })
+    //
+    // this.backendDataLoaderService.getTestTriangles().subscribe(response => {
+    //   this.drawTriangles(response);
+    // })
 
-    // test pobierania danych z backendu
-    this.backendDataLoaderService.getTestLayers().subscribe(response => {
-      let pointsCoords: Vector3[] = [];
-      response.forEach(layer => {
-        layer.points.map(point => {
-          pointsCoords.push(new Vector3(point.x, point.height, point.y));
-        })
-      })
-      const pointsGeometry = new BufferGeometry().setFromPoints(pointsCoords);
-      const material = new PointsMaterial({color: 0x8d34ff, size: 10});
-      const points = new Points(pointsGeometry, material)
-      this.scene.add(points);
-    })
   }
 
   animate() {
@@ -80,26 +79,10 @@ export class AppComponent implements OnInit {
   }
 
   onFileUpload(event) {
-    //todo: zarządzanie pamięcią - po ponownym załadowaniu tych samych plików, dane z poprzednich wciąż są zaalokowane
-    this.loadedKidneyLayers = [];
-    this.kidneyDataLoaderService.loadKidneyData(event.target.files, this.pointsReductionRatio, this.distanceBetweenLayers)
-      .subscribe(
-        loadedDataPart => {
-          if(loadedDataPart instanceof KidneyLayerData) {
-            console.log("Loaded part is KidneyLayerData")
-            loadedDataPart.rawLayer.data = null; // dla oszczędności RAMu
-            this.loadedKidneyLayers.push(loadedDataPart)
-          } else if(loadedDataPart instanceof Map) {
-            console.log("Loaded part is Map")
-            this.layersTranslationData = loadedDataPart;
-          }
-        },
-        errorMsg => console.error(errorMsg),
-        () => {
-          this.translateLayers();
-          this.refreshScene()
-        }
-      )
+    this.refreshScene();
+    this.backendDataLoaderService.getTrianglesFromFiles(event.target.files).subscribe(response => {
+      this.drawTriangles(response);
+    });
   }
 
   onLayerVisibilityChanged() {
@@ -114,6 +97,12 @@ export class AppComponent implements OnInit {
     gridHelper.translateZ(2500);
     this.scene.add(axesHelper, gridHelper);
 
+    const light = new PointLight();
+    light.intensity = 0.5;
+    light.decay = 2;
+    this.camera.add(light)
+    this.scene.add(this.camera)
+
     this.loadedKidneyLayers.forEach(layerData => {
       if(layerData.isVisible) {
         this.scene.add(layerData.layerPoints)
@@ -121,20 +110,33 @@ export class AppComponent implements OnInit {
     });
   }
 
-  translateLayers() {
-    this.layersTranslationData.forEach(([x,y,z], key) => {
-      this.loadedKidneyLayers.filter(layer => parseInt(layer.rawLayer.header.layerNumber) == key + 1 )
-        .forEach(layer => {
-          console.log("translation", layer.rawLayer.header)
-          // if(x && y && z) {
-            // layer.layerPoints = layer.layerPoints
-              // .translateX(-y)
-              // .translateY(z) // z <-> y, bo dla threejs "y" to wysokość
-              // .translateZ(-x)
-          // }
-        })
-
+  drawTriangles(triangles: Triangle[]) {
+    let geometry = new Geometry();
+    triangles.forEach((triangle, index) => {
+      const v1 = new Vector3(triangle.vertex1.x, triangle.vertex1.height, triangle.vertex1.y)
+      const v2 = new Vector3(triangle.vertex2.x, triangle.vertex2.height, triangle.vertex2.y)
+      const v3 = new Vector3(triangle.vertex3.x, triangle.vertex3.height, triangle.vertex3.y)
+      const face = new Face3(3*index, 3*index+1, 3*index+2)
+      geometry.vertices.push(v3, v2, v1);
+      geometry.faces.push(face);
     })
+    geometry.computeFaceNormals();
+    const mesh = new Mesh(geometry, new MeshStandardMaterial({color: 0x0000ff}))
+    this.scene.add(mesh);
+
+  }
+
+  drawLayersPoints(layers: Layer[]) {
+    let pointsCoords: Vector3[] = [];
+    layers.forEach(layer => {
+      layer.points.map(point => {
+        pointsCoords.push(new Vector3(point.x, point.height, point.y));
+      })
+    })
+    const pointsGeometry = new BufferGeometry().setFromPoints(pointsCoords);
+    const material = new PointsMaterial({color: 0x8d34ff, size: 10});
+    const points = new Points(pointsGeometry, material)
+    this.scene.add(points);
   }
 
 }

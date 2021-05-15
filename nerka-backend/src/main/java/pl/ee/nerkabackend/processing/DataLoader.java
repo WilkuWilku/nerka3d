@@ -2,6 +2,7 @@ package pl.ee.nerkabackend.processing;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import pl.ee.nerkabackend.processing.model.LayerHeader;
 import pl.ee.nerkabackend.processing.model.RawLayer;
 import pl.ee.nerkabackend.exception.NoDataException;
@@ -14,10 +15,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataLoader {
 
-    public RawLayer loadKidneyDataFromFile(String filename) throws IOException, NoDataException {
-        log.info("loadKidneyDataFromFile() start - filename: {}", filename);
-        InputStream inputStream = Optional.ofNullable(getClass().getResourceAsStream(filename))
+    public RawLayer loadKidneyDataFromLocalFile(String filename) throws IOException, NoDataException {
+        InputStream inputStream = openLocalKidneyDataFile(filename);
+        return parseKidneyDataFromFile(inputStream, filename);
+    }
+
+    public RawLayer loadKidneyDataFromUploadedFile(MultipartFile multipartFile) throws IOException, NoDataException {
+        InputStream inputStream = multipartFile.getInputStream();
+        return parseKidneyDataFromFile(inputStream, multipartFile.getOriginalFilename());
+    }
+
+    private InputStream openLocalKidneyDataFile(String filename) throws FileNotFoundException {
+        return Optional.ofNullable(getClass().getResourceAsStream(filename))
                 .orElseThrow(() -> new FileNotFoundException(filename));
+    }
+
+    private RawLayer parseKidneyDataFromFile(InputStream inputStream, String filename) throws IOException, NoDataException {
+        log.info("parseKidneyDataFromFile() start - filename: {}", filename);
+
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             RawLayer kidneyLayer = new RawLayer();
 
@@ -46,7 +61,7 @@ public class DataLoader {
             kidneyLayer.setData(kidneyBorderLayerData);
             kidneyLayer.setLayerNumber(layerHeader.getNumber());
 
-            log.info("loadKidneyDataFromFile() end");
+            log.info("parseKidneyDataFromFile() end");
             return kidneyLayer;
         }
     }
