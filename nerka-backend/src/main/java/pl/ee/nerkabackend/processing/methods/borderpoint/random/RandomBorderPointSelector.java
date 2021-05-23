@@ -1,8 +1,9 @@
-package pl.ee.nerkabackend.processing.methods.borderpoint;
+package pl.ee.nerkabackend.processing.methods.borderpoint.random;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import pl.ee.nerkabackend.processing.methods.borderpoint.BorderPointSelector;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.RawLayer;
 
@@ -10,7 +11,7 @@ import java.util.Map;
 import java.util.Random;
 
 @Slf4j
-@Service
+@Component
 public class RandomBorderPointSelector implements BorderPointSelector {
 
     @Value("${kidney.distance.between.layers}")

@@ -1,5 +1,6 @@
 package pl.ee.nerkabackend.webservice.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class TestController {
 
     @Autowired
     private KidneyProcessingService kidneyProcessingService;
+
+    @Autowired
+    private Triangulation triangulation;
 
     @GetMapping("/layers")
     private ResponseEntity<List<Layer>> getLayers() {
@@ -42,7 +47,6 @@ public class TestController {
 
     @GetMapping("/triangles")
     private ResponseEntity<List<Triangle>> triangleTest() {
-        Triangulation triangulation = new Triangulation();
 
         List<String> layersToLoad = List.of(
                 "/ct23a/ct23a_kidney_1-0.ctl",
@@ -79,9 +83,8 @@ public class TestController {
     @PostMapping(value = "/trianglesFromFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     private ResponseEntity<List<Triangle>> trianglesFromFiles(@RequestParam("files") MultipartFile[] files) {
         List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
-                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 1.2);
+                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 0.8);
         List<Triangle> triangles = new ArrayList<>();
-        Triangulation triangulation = new Triangulation();
 
         for(int i=layers.size()-1; i>0; i--) {
             triangles.addAll(triangulation.getTrianglesBetweenLayers(layers.get(i), layers.get(i-1)));

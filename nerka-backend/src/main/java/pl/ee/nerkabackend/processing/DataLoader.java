@@ -40,7 +40,7 @@ public class DataLoader {
                 .orElseThrow(() -> new NoDataException("No data found in file: "+filename));
             LayerHeader layerHeader = parseHeader(header);
 
-            kidneyLayer.setName(layerHeader.getName());
+            kidneyLayer.setName(layerHeader.getName()+"/"+layerHeader.getNumber()+"/"+layerHeader.getIndex());
 
             String line;
             List<List<Integer>> layerData = new ArrayList<>();

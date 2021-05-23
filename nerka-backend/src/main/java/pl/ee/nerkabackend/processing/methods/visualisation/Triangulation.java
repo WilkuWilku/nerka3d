@@ -2,28 +2,42 @@ package pl.ee.nerkabackend.processing.methods.visualisation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import pl.ee.nerkabackend.exception.TriangulationException;
+import pl.ee.nerkabackend.processing.methods.correspondingpoints.selector.CorrespondingPointsSelector;
+import pl.ee.nerkabackend.processing.model.CorrespondingPoints;
 import pl.ee.nerkabackend.processing.model.KidneyVisualisationObject;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 @Slf4j
+@Component
 public class Triangulation implements VisualisationMethod {
+
+    @Autowired
+    @Qualifier("quarterCorrespondingPointsSelector")
+    private CorrespondingPointsSelector correspondingPointsSelector;
+
 
     @Override
     public KidneyVisualisationObject getKidneyVisualisationObject(List<Layer> layers, Object... params) {
         return null;
     }
 
-
     public List<Triangle> getTrianglesBetweenLayers(Layer topLayer, Layer bottomLayer) {
         log.info("getTrianglesBetweenLayers() start - topLayer: {}, bottomLayer: {}", topLayer.getName(), bottomLayer.getName());
+
+        log.info("getTrianglesBetweenLayers() setting corresponding points as first in layers");
+        setCorrespondingPointsAsFirstInLayers(topLayer, bottomLayer);
+
         List<LayerPoint> topPoints = topLayer.getPoints();
         List<LayerPoint> bottomPoints = bottomLayer.getPoints();
         List<Triangle> triangles = new ArrayList<>();
@@ -76,23 +90,34 @@ public class Triangulation implements VisualisationMethod {
         return triangles;
     }
 
-    public LayerPoint getNextTrianglePointByAngle(LayerPoint topPoint, LayerPoint bottomPoint,
+    private LayerPoint getNextTrianglePointByAngle(LayerPoint topPoint, LayerPoint bottomPoint,
                                                   LayerPoint nextTopPoint, LayerPoint nextBottomPoint) {
+        if(nextTopPoint == null && nextBottomPoint == null) {
+            throw new TriangulationException("No next point specified for topPoint: "+topPoint.toString()+", bottomPoint: "+bottomPoint.toString());
+        }
+        if(nextTopPoint == null) {
+            return nextBottomPoint;
+        }
+        if(nextBottomPoint == null) {
+            return nextTopPoint;
+        }
+
         log.info("getNextTrianglePointByAngle() start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint);
         Triangle triangleOptionTop = new Triangle(topPoint, bottomPoint, nextTopPoint);
         Triangle triangleOptionBottom = new Triangle(topPoint, bottomPoint, nextBottomPoint);
         double maxAngleOfTriangleOptionTop = getMaxAngleOfTriangle(triangleOptionTop);
         double maxAngleOfTriangleOptionBottom = getMaxAngleOfTriangle(triangleOptionBottom);
         if(maxAngleOfTriangleOptionBottom < maxAngleOfTriangleOptionTop) {
-            log.info("getNextTrianglePointByAngle end - next point is bottom point");
+            log.info("getNextTrianglePointByAngle() end - next point is bottom point");
             return nextBottomPoint;
         } else {
-            log.info("getNextTrianglePointByAngle end - next point is top point");
+            log.info("getNextTrianglePointByAngle() end - next point is top point");
             return nextTopPoint;
         }
     }
 
-    public LayerPoint getNextTrianglePointByLength(LayerPoint topPoint, LayerPoint bottomPoint,
+    //TODO: wagowo względnić ile zostało punktów na górze a ile na dole, żeby na koniec nie zostawały punkty tylko na jednej warstwie
+    private LayerPoint getNextTrianglePointByLength(LayerPoint topPoint, LayerPoint bottomPoint,
                                                    LayerPoint nextTopPoint, LayerPoint nextBottomPoint) {
         log.info("getNextTrianglePointByLength() start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint);
 
@@ -111,15 +136,15 @@ public class Triangulation implements VisualisationMethod {
         double lengthSumOfTriangleOptionTop = getTriangleEdgesLengthSum(triangleOptionTop);
         double lengthSumOfTriangleOptionBottom = getTriangleEdgesLengthSum(triangleOptionBottom);
         if (lengthSumOfTriangleOptionBottom < lengthSumOfTriangleOptionTop) {
-            log.debug("getNextTrianglePointByLength end - next point is bottom point");
+            log.debug("getNextTrianglePointByLength() end - next point is bottom point");
             return nextBottomPoint;
         } else {
-            log.debug("getNextTrianglePointByLength end - next point is top point");
+            log.debug("getNextTrianglePointByLength() end - next point is top point");
             return nextTopPoint;
         }
     }
 
-    public double getMaxAngleOfTriangle(Triangle triangle) {
+    private double getMaxAngleOfTriangle(Triangle triangle) {
         LayerPoint vertex1 = triangle.getVertex1();
         LayerPoint vertex2 = triangle.getVertex2();
         LayerPoint vertex3 = triangle.getVertex3();
@@ -143,7 +168,7 @@ public class Triangulation implements VisualisationMethod {
                 .getAsDouble();
     }
 
-    public double getTriangleEdgesLengthSum(Triangle triangle) {
+    private double getTriangleEdgesLengthSum(Triangle triangle) {
         LayerPoint vertex1 = triangle.getVertex1();
         LayerPoint vertex2 = triangle.getVertex2();
         LayerPoint vertex3 = triangle.getVertex3();
@@ -157,5 +182,13 @@ public class Triangulation implements VisualisationMethod {
         double distance3to1 = v3.distance(v1);
 
         return distance1to2 + distance2to3 + distance3to1;
+    }
+
+    private void setCorrespondingPointsAsFirstInLayers(Layer topLayer, Layer bottomLayer) {
+        CorrespondingPoints bestCorrespondingPoints = correspondingPointsSelector.getTwoCorrespondingPoints(topLayer, bottomLayer);
+        int topPointIndex = topLayer.getPoints().indexOf(bestCorrespondingPoints.getTopPoint());
+        int bottomPointIndex = bottomLayer.getPoints().indexOf(bestCorrespondingPoints.getBottomPoint());
+        Collections.rotate(topLayer.getPoints(), -topPointIndex);
+        Collections.rotate(bottomLayer.getPoints(), -bottomPointIndex);
     }
 }
