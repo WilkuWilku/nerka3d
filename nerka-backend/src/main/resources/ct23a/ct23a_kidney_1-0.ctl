@@ -1,3 +1,4 @@
+translation -4.424460e+02 3.714280e+02 0
 ct23a_kidney_1-0.ctl:
 6000
 6000

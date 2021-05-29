@@ -3,9 +3,11 @@ package pl.ee.nerkabackend.processing;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import pl.ee.nerkabackend.constants.Constants;
 import pl.ee.nerkabackend.processing.model.LayerHeader;
+import pl.ee.nerkabackend.processing.model.LayerTranslation;
 import pl.ee.nerkabackend.processing.model.RawLayer;
-import pl.ee.nerkabackend.exception.NoDataException;
+import pl.ee.nerkabackend.exception.DataLoadingException;
 
 import java.io.*;
 import java.util.*;
@@ -15,12 +17,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataLoader {
 
-    public RawLayer loadKidneyDataFromLocalFile(String filename) throws IOException, NoDataException {
+    public RawLayer loadKidneyDataFromLocalFile(String filename) throws IOException, DataLoadingException {
         InputStream inputStream = openLocalKidneyDataFile(filename);
         return parseKidneyDataFromFile(inputStream, filename);
     }
 
-    public RawLayer loadKidneyDataFromUploadedFile(MultipartFile multipartFile) throws IOException, NoDataException {
+    public RawLayer loadKidneyDataFromUploadedFile(MultipartFile multipartFile) throws IOException, DataLoadingException {
         InputStream inputStream = multipartFile.getInputStream();
         return parseKidneyDataFromFile(inputStream, multipartFile.getOriginalFilename());
     }
@@ -30,19 +32,34 @@ public class DataLoader {
                 .orElseThrow(() -> new FileNotFoundException(filename));
     }
 
-    private RawLayer parseKidneyDataFromFile(InputStream inputStream, String filename) throws IOException, NoDataException {
+    private RawLayer parseKidneyDataFromFile(InputStream inputStream, String filename) throws IOException, DataLoadingException {
         log.info("parseKidneyDataFromFile() start - filename: {}", filename);
 
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             RawLayer kidneyLayer = new RawLayer();
 
-            String header = Optional.ofNullable(reader.readLine())
-                .orElseThrow(() -> new NoDataException("No data found in file: "+filename));
-            LayerHeader layerHeader = parseHeader(header);
+            String line = Optional.ofNullable(reader.readLine())
+                .orElseThrow(() -> new DataLoadingException("No data found in file: "+filename));
+            if(line.startsWith(Constants.CTL_TRANSLATION_PREFIX)) {
+                log.info("parseKidneyDataFromFile() processing translation: {}", line);
+                Double[] translationCoords = Arrays.stream(line.split(" "))
+                        .dropWhile(element -> element.equals(Constants.CTL_TRANSLATION_PREFIX))
+                        .map(Double::valueOf)
+                        .toArray(Double[]::new);
+                validateLayerTranslationData(translationCoords, line);
 
+                LayerTranslation translation = new LayerTranslation(translationCoords[0], translationCoords[1], translationCoords[2]);
+                log.info("parseKidneyDataFromFile() loaded translation: {}", translation);
+                kidneyLayer.setTranslation(translation);
+                line = reader.readLine();
+            }
+
+            LayerHeader layerHeader = parseHeader(line);
+            if(layerHeader == null) {
+                throw new DataLoadingException("No header found in file: "+filename);
+            }
             kidneyLayer.setName(layerHeader.getName()+"/"+layerHeader.getNumber()+"/"+layerHeader.getIndex());
 
-            String line;
             List<List<Integer>> layerData = new ArrayList<>();
             while((line = reader.readLine()) != null) {
                 List<Integer> row = parseRow(line);
@@ -80,6 +97,10 @@ public class DataLoader {
     }
 
     private LayerHeader parseHeader(String headerInput) {
+        if(headerInput == null) {
+            return null;
+        }
+
         headerInput = headerInput.split(".ctl")[0];
 
         String[] headerParts = headerInput.split("_");
@@ -122,5 +143,21 @@ public class DataLoader {
             || layerData[x-1][y-1] == 0
             || layerData[x][y+1] == 0
             || layerData[x][y-1] == 0;
+    }
+
+    private void validateLayerTranslationData(Double[] translationData, String sourceLine) throws DataLoadingException {
+        if(translationData.length != 3) {
+            throw new DataLoadingException("Invalid translation data - expected 3 elements, received: "+
+                    translationData.length+ ". Source line: "+sourceLine);
+        }
+        if(translationData[0] == null) {
+            throw new DataLoadingException("Layer translation X is null. Source line: "+sourceLine);
+        }
+        if(translationData[1] == null) {
+            throw new DataLoadingException("Layer translation Y is null. Source line: "+sourceLine);
+        }
+        if(translationData[2] == null) {
+            throw new DataLoadingException("Layer translation Z is null. Source line: "+sourceLine);
+        }
     }
 }

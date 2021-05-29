@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.ee.nerkabackend.exception.NoDataException;
+import pl.ee.nerkabackend.exception.DataLoadingException;
 import pl.ee.nerkabackend.processing.DataLoader;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.model.KidneyVisualisationObject;
@@ -71,7 +71,7 @@ public class KidneyProcessingService {
                         RawLayer rawLayer = dataLoader.loadKidneyDataFromLocalFile(filename);
                         return layerProcessingService.processLayer(rawLayer,
                                 type.getPointsDeterminationMethod(), params);
-                    } catch (IOException | NoDataException e) {
+                    } catch (IOException | DataLoadingException e) {
                         e.printStackTrace();
                     }
                     return null;
@@ -91,7 +91,7 @@ public class KidneyProcessingService {
                         RawLayer rawLayer = dataLoader.loadKidneyDataFromUploadedFile(file);
                         return layerProcessingService.processLayer(rawLayer,
                                 type.getPointsDeterminationMethod(), params);
-                    } catch (IOException | NoDataException e) {
+                    } catch (IOException | DataLoadingException e) {
                         e.printStackTrace();
                     }
                     return null;

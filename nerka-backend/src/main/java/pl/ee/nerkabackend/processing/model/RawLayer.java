@@ -8,4 +8,5 @@ public class RawLayer {
     private int index;
     private int layerNumber;
     private String name;
+    private LayerTranslation translation;
 }
