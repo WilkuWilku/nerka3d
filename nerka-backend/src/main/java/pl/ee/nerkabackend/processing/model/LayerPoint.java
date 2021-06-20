@@ -15,4 +15,12 @@ public class LayerPoint {
         this.y = point.getY();
         this.height = point.getHeight();
     }
+
+    @Override
+    public String toString() {
+        return "LayerPoint(" + x +
+                ", " + y +
+                ", " + height +
+                ')';
+    }
 }

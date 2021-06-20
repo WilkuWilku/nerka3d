@@ -34,6 +34,9 @@ public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSe
     @Value("${quarter.corresponding.points.distance.between.checked.points}")
     private Integer defaultDistanceBetweenCheckedPoints;
 
+    @Value("${quarter.corresponding.points.checked.points.percent}")
+    private Double checkedPointsPercentOnLayer;
+
     @Override
     public CorrespondingPoints getTwoCorrespondingPoints(Layer topLayer, Layer bottomLayer) {
         log.info("getTwoCorrespondingPoints() start - topLayer: {}, bottomLayer: {}", topLayer.getName(), bottomLayer.getName());
@@ -55,8 +58,8 @@ public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSe
         int topEdgePointIndex = topLayer.getPoints().indexOf(topEdgePoint);
         int bottomEdgePointIndex = bottomLayer.getPoints().indexOf(bottomEdgePoint);
 
-        List<LayerPoint> pointsAroundTopEdgePoint = getAllCheckedPointsAround(topLayer.getPoints(), topEdgePointIndex, defaultPointsToCheckOnOneSide, defaultDistanceBetweenCheckedPoints);
-        List<LayerPoint> pointsAroundBottomEdgePoint = getAllCheckedPointsAround(bottomLayer.getPoints(), bottomEdgePointIndex, defaultPointsToCheckOnOneSide, defaultDistanceBetweenCheckedPoints);
+        List<LayerPoint> pointsAroundTopEdgePoint = getAllCheckedPointsAround(topLayer.getPoints(), topEdgePointIndex, checkedPointsPercentOnLayer, defaultDistanceBetweenCheckedPoints);
+        List<LayerPoint> pointsAroundBottomEdgePoint = getAllCheckedPointsAround(bottomLayer.getPoints(), bottomEdgePointIndex, checkedPointsPercentOnLayer, defaultDistanceBetweenCheckedPoints);
 
         SideCorrespondingPoints bestCorrespondingPoints = pointsAroundTopEdgePoint.stream()
                 .map(topPoint -> getBestCorrespondingPointsFromTopPoint(topPoint, pointsAroundBottomEdgePoint, layerSide))
@@ -76,10 +79,12 @@ public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSe
     }
 
 
-    public List<LayerPoint> getAllCheckedPointsAround(List<LayerPoint> layerPoints, int pointIndex, int pointsToCheckOnOneSide, int distanceBetweenCheckedPoints) {
-        log.info("getAllCheckedPointsAround() start - pointIndex: {}, pointsToCheckOnOneSide: {}, distanceBetweenCheckedPoints: {}", pointIndex, pointsToCheckOnOneSide, distanceBetweenCheckedPoints);
+    public List<LayerPoint> getAllCheckedPointsAround(List<LayerPoint> layerPoints, int pointIndex, double pointsPercentToCheck, int distanceBetweenCheckedPoints) {
+        log.info("getAllCheckedPointsAround() start - pointIndex: {}, pointsPercentToCheck: {}, distanceBetweenCheckedPoints: {}", pointIndex, pointsPercentToCheck, distanceBetweenCheckedPoints);
 
         LoopArrayList<LayerPoint> points = new LoopArrayList<>(layerPoints);
+        int pointsToCheckOnOneSide = (int) (layerPoints.size() * pointsPercentToCheck/100);
+        log.info("getAllCheckedPointsAround() pointsToCheckOnOneSide = {}", pointsToCheckOnOneSide);
 
         List<Integer> indexOffsets = getIndexOffsets(pointsToCheckOnOneSide, distanceBetweenCheckedPoints);
 
