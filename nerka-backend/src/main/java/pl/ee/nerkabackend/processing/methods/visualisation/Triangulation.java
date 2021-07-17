@@ -13,7 +13,11 @@ import pl.ee.nerkabackend.processing.model.KidneyVisualisationObject;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
+import pl.ee.nerkabackend.report.ReportingService;
+import pl.ee.nerkabackend.report.model.Measurement;
+import pl.ee.nerkabackend.report.model.Report;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +31,9 @@ public class Triangulation implements VisualisationMethod {
     @Qualifier("quarterCorrespondingPointsSelector")
     private CorrespondingPointsSelector correspondingPointsSelector;
 
+    @Autowired
+    private ReportingService reportingService;
+
     @Value("${triangulation.max.angle.indexes.ratio.diff.coefficient}")
     private Double maxAngleIndexesRatioDiffCoefficient;
 
@@ -38,6 +45,9 @@ public class Triangulation implements VisualisationMethod {
 
     @Value("${triangulation.points.distance.indexes.ratio.diff.coefficient}")
     private Double pointsDistanceIndexesRatioCoefficient;
+
+    @Value("${triangulation.reporting.enabled}")
+    private Boolean isReportingEnabled;
 
     @Override
     public KidneyVisualisationObject getKidneyVisualisationObject(List<Layer> layers, Object... params) {
@@ -66,12 +76,26 @@ public class Triangulation implements VisualisationMethod {
         LayerPoint nextTopPoint = topPoints.get(topLayerIndex + 1);
         LayerPoint nextBottomPoint = bottomPoints.get(bottomLayerIndex + 1);
 
+        List<Measurement> measurements = new ArrayList<>();
+        int step = 0;
+
         do {
+            step++;
             double ratioDiffValue = calculateAdditionalValueFromLayersLengthRatio(topLayerIndex, bottomLayerIndex, layersPointsCount, layersLengthRatio);
             LayerPoint nextPoint = getNextTrianglePointByPointsDistance(currentTopPoint, currentBottomPoint,
                     nextTopPoint, nextBottomPoint, ratioDiffValue);
             Triangle nextTriangle = new Triangle(currentTopPoint, currentBottomPoint, nextPoint);
             triangles.add(nextTriangle);
+
+            if(isReportingEnabled) {
+                Measurement measurement = Measurement.builder()
+                        .currentStep(step)
+                        .topIndex(topLayerIndex)
+                        .bottomIndex(bottomLayerIndex)
+                        .currentRatio(topLayerIndex == 0 || bottomLayerIndex == 0 ? 0 : (double) topLayerIndex / bottomLayerIndex)
+                        .build();
+                measurements.add(measurement);
+            }
 
             if (nextPoint.equals(nextTopPoint)) {
                 currentTopPoint = nextPoint;
@@ -101,6 +125,20 @@ public class Triangulation implements VisualisationMethod {
             }
 
         } while(topLayerIndex < topPoints.size() || bottomLayerIndex < bottomPoints.size());
+
+        if(isReportingEnabled) {
+            Report report = Report.builder()
+                    .identifier("test layers " + topLayer.getName() + " & " + bottomLayer.getName())
+                    .targetRatio(layersLengthRatio)
+                    .measurements(measurements)
+                    .build();
+            try {
+                String filename = "test-report-"+System.currentTimeMillis()+"-"+topLayer.getName().replace("/", "_") + "&" + bottomLayer.getName().replace("/", "_")+".xlsx";
+                reportingService.exportReportToXlsx(report, filename);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         log.info("getTrianglesBetweenLayers() end");
         return triangles;
