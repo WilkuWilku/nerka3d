@@ -37,4 +37,16 @@ export class BackendDataLoaderService {
     return this.http.post<Triangle[]>("/api/trianglesFromFiles", formData);
   }
 
+  public getBordersFromFiles(files): Observable<LayerPoint[]> {
+    let formData = new FormData();
+    for(let i=0; i<files.length; i++) {
+      formData.append("files", files[i]);
+    }
+    return this.http.post<LayerPoint[]>("/api/bordersFromFiles", formData);
+  }
+
+  public getTestSpline(): Observable<LayerPoint[]> {
+    return this.http.get<LayerPoint[]>("/api/splines")
+  }
+
 }
