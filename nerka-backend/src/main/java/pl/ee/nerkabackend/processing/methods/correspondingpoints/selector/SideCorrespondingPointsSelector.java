@@ -10,6 +10,7 @@ import pl.ee.nerkabackend.processing.methods.edgepoint.side.resolver.EdgePointSe
 import pl.ee.nerkabackend.processing.model.*;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Component
@@ -40,6 +41,12 @@ public class SideCorrespondingPointsSelector implements CorrespondingPointsSelec
                 .orElse(null);
         log.info("getTwoCorrespondingPoints() end - best corresponding points: {}", bestMatchingCorrespondingPoints);
         return bestMatchingCorrespondingPoints;
+    }
+
+    @Override
+    public SideCorrespondingPoints getBestCorrespondingPointsFromTopPoint(LayerPoint topPoint, List<LayerPoint> bottomLayerPoints, LayerSide layerSide) {
+        //this method is not needed here
+        return null;
     }
 
     public SideCorrespondingPoints findTwoEdgePointsOnLayer(Layer topLayer, Layer bottomLayer, LayerSide layerSide) {

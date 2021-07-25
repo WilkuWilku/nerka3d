@@ -66,18 +66,18 @@ public class KidneyProcessingService {
         log.info("getProcessedLayers() start - files to load: {}", filenamesToLoad.size());
         long startTime = System.currentTimeMillis();
         List<Layer> layers = filenamesToLoad.parallelStream()
-                .map(filename -> {
-                    try {
-                        RawLayer rawLayer = dataLoader.loadKidneyDataFromLocalFile(filename);
-                        return layerProcessingService.processLayer(rawLayer,
-                                type.getPointsDeterminationMethod(), params);
-                    } catch (IOException | DataLoadingException e) {
-                        e.printStackTrace();
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            .map(filename -> {
+                try {
+                    RawLayer rawLayer = dataLoader.loadKidneyDataFromLocalFile(filename);
+                    return layerProcessingService.processLayer(rawLayer,
+                            type.getPointsDeterminationMethod(), params);
+                } catch (IOException | DataLoadingException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
         log.info("getProcessedLayers() end - successfully loaded layers: {} in [{} ms]", layers.size(), System.currentTimeMillis() - startTime);
         return layers;
     }

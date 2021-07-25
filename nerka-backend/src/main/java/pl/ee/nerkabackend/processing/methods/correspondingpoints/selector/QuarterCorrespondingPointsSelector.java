@@ -69,6 +69,7 @@ public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSe
         return bestCorrespondingPoints;
     }
 
+    @Override
     public SideCorrespondingPoints getBestCorrespondingPointsFromTopPoint(LayerPoint topPoint, List<LayerPoint> bottomLayerPoints, LayerSide layerSide) {
         SideCorrespondingPoints bestCorrespondingPoints = bottomLayerPoints.stream()
                 .map(bottomPoint -> new SideCorrespondingPoints(topPoint, bottomPoint, layerSide))

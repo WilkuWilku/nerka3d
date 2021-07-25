@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
+import pl.ee.nerkabackend.processing.methods.intermediateLayers.IntermediateLayersService;
 import pl.ee.nerkabackend.processing.methods.visualisation.Triangulation;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
@@ -21,6 +22,9 @@ public class TestController {
 
     @Autowired
     private KidneyProcessingService kidneyProcessingService;
+
+    @Autowired
+    private IntermediateLayersService intermediateLayersService;
 
     @Autowired
     private Triangulation triangulation;
@@ -83,11 +87,15 @@ public class TestController {
     @PostMapping(value = "/trianglesFromFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     private ResponseEntity<List<Triangle>> trianglesFromFiles(@RequestParam("files") MultipartFile[] files) {
         List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
-                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 0.8);
+                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION_EQUINUMEROUS, 50);
+
+        List<Layer> layersWithIntermediateLayers = intermediateLayersService.getLayersWithIntermediateLayers(layers, 5);
+
         List<Triangle> triangles = new ArrayList<>();
 
-        for(int i=layers.size()-1; i>0; i--) {
-            triangles.addAll(triangulation.getTrianglesBetweenLayers(layers.get(i), layers.get(i-1)));
+        for(int i=layersWithIntermediateLayers.size()-1; i>0; i--) {
+            triangles.addAll(triangulation
+                    .getTrianglesBetweenLayers(layersWithIntermediateLayers.get(i), layersWithIntermediateLayers.get(i-1)));
         }
 
         return ResponseEntity.ok(triangles);

@@ -1,6 +1,7 @@
 package pl.ee.nerkabackend.processing.methods;
 
 import pl.ee.nerkabackend.processing.methods.pointsdetermination.EvenlyDistributed;
+import pl.ee.nerkabackend.processing.methods.pointsdetermination.EvenlyDistributedEquinumerous;
 import pl.ee.nerkabackend.processing.methods.pointsdetermination.PointsDeterminationMethod;
 import pl.ee.nerkabackend.processing.methods.visualisation.Triangulation;
 import pl.ee.nerkabackend.processing.methods.visualisation.VisualisationMethod;
@@ -11,6 +12,8 @@ public class MethodProvider {
             MethodTypes.PointsDeterminationMethodType type) {
         if (type.equals(MethodTypes.PointsDeterminationMethodType.EVENLY_DISTRIBUTED)) {
             return new EvenlyDistributed();
+        } else if (type.equals(MethodTypes.PointsDeterminationMethodType.EVENLY_DISTRIBUTED_EQUINUMEROUS)) {
+            return new EvenlyDistributedEquinumerous();
         }
         return null;
     }

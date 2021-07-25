@@ -6,16 +6,19 @@ import lombok.Setter;
 public class MethodTypes {
     public enum PointsDeterminationMethodType {
         EVENLY_DISTRIBUTED,
+        EVENLY_DISTRIBUTED_EQUINUMEROUS,
         PLACEHOLDER_METHOD
     }
 
     public enum VisualisationMethodType {
         TRIANGULATION,
+        TRIANGULATION_EQUINUMEROUS,
         PLACEHOLDER_METHOD
     }
 
     public enum KidneyVisualisationMethodType {
-        TRIANGULATION(VisualisationMethodType.TRIANGULATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED);
+        TRIANGULATION(VisualisationMethodType.TRIANGULATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED),
+        TRIANGULATION_EQUINUMEROUS(VisualisationMethodType.TRIANGULATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED_EQUINUMEROUS);
 
         @Getter
         @Setter
