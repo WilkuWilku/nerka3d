@@ -20,7 +20,7 @@ public class IntermediateLayersService {
     @Qualifier("quarterCorrespondingPointsSelector")
     private CorrespondingPointsSelector correspondingPointsSelector;
 
-    public List<Layer> getLayersWithIntermediateLayers(List<Layer> layers, int layerMultiplier) {
+    public List<Layer> getLayersWithIntermediateLayers(List<Layer> layers, int layerMultiplier, InterpolationType type) {
         setCorrespondingPointsAsFirstInLayers(layers.get(0), layers.get(1));
         for (int i = 1; i < layers.size() - 1; i++) {
             adjustFirstPointInLayerToFirstPointFromLayerAbove(layers.get(i).getPoints().get(0), layers.get(i+1));
@@ -43,7 +43,7 @@ public class IntermediateLayersService {
             double[] x = verticalLine.stream().mapToDouble(LayerPoint::getX).toArray();
             double[] y = verticalLine.stream().mapToDouble(LayerPoint::getHeight).toArray();
             double[] z = verticalLine.stream().mapToDouble(LayerPoint::getY).toArray();
-            verticalLinesWithIntermediateLayers.add(CubicSplineInterpolation.interpolate(x, y, z, layerMultiplier));
+            verticalLinesWithIntermediateLayers.add(interpolateWithMethod(x, y, z, layerMultiplier, type));
         });
 
         ArrayList<Layer> layersWithIntermediateLayers = new ArrayList<>();
@@ -70,5 +70,20 @@ public class IntermediateLayersService {
         SideCorrespondingPoints bestCorrespondingPoints = correspondingPointsSelector.getBestCorrespondingPointsFromTopPoint(topPoint, bottomLayer.getPoints(), null);
         int bottomPointIndex = bottomLayer.getPoints().indexOf(bestCorrespondingPoints.getBottomPoint());
         Collections.rotate(bottomLayer.getPoints(), -bottomPointIndex);
+    }
+
+    public ArrayList<LayerPoint> interpolateWithMethod(double[] x, double[] y, double[] z, int layerMultiplier, InterpolationType type) {
+        switch (type) {
+            case Linear:
+                return LinearInterpolation.interpolate(x, y, z, layerMultiplier);
+            case CubicSpline:
+                return CubicSplineInterpolation.interpolate(x, y, z, layerMultiplier);
+            default:
+                return null;
+        }
+    }
+
+    public enum InterpolationType {
+        CubicSpline, Linear
     }
 }

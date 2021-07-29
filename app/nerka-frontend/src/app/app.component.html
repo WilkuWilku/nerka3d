@@ -1,11 +1,46 @@
 <div class="app-container">
 
   <div class="parameters-section">
-    <div class="file-upload-container">
-      <div class="file-upload-label">Wybierz plik z danymi:</div>
-      <input type="file" multiple (change)="onFileUpload($event)" accept=".ctl"/>
-      <div class="points-count-label">Załadowanych punktów: {{pointsCount}}</div>
+    <div class="parameter-input">
+      <label htmlFor="displayMode">Tryb wyświetlania</label>
+      <select id="diplayMode" (change)="onDisplayModeChange($event)">
+        <option value="kidney">Nerka</option>
+        <option value="layer">Warstwy</option>
+      </select>
     </div>
+    <div *ngIf="displayMode === 'kidney'">
+      <div class="parameter-input">
+        <label htmlFor="numberOfPointsOnLayer">Ilość punktów na warstwę</label>
+        <input id="numberOfPointsOnLayer" type="number" value="{{numberOfPointsOnLayer}}" (change)="onNumberOfPointsOnLayerChange($event)"/>
+      </div>
+
+      <div class="parameter-input">
+        <label htmlFor="numberOfIntermediateLayers">Ilość warstw pośrednich</label>
+        <input ng id="numberOfIntermediateLayers" type="number" value="{{numberOfIntermediateLayers}}" (change)="onNumberOfIntermediateLayersChange($event)"/>
+      </div>
+
+      <div class="parameter-input">
+        <label htmlFor="interpolationMethodSelect">Metoda interpolacji</label>
+        <select  id="interpolationMethodSelect" (change)="onInterpolationMethodChange($event)">
+          <option value="Linear">Linear</option>
+          <option value="CubicSpline">Cubic Spline</option>
+        </select>
+      </div>
+    </div>
+    <div class="file-upload">
+      <label class="file-upload-label">
+        <input type="file" multiple style="width: 180px;" (change)="onFileUpload($event)" accept=".ctl"/>
+        Wgraj Pliki
+      </label>
+
+    </div>
+    <div class="file-upload-status">{{getFileUploadStatusText()}}</div>
+
+    <div class="visualise-button">
+      <button (click)="onVisualiseButtonClick()" [disabled]="!buttonEnabled">Wizualizuj</button>
+    </div>
+
+
     <div class="layers-list" *ngIf="loadedKidneyLayers.length > 0">
       <span class="layers-list-title">WARSTWY</span>
       <div class="layer-list-item" *ngFor="let layer of loadedKidneyLayers">
@@ -15,7 +50,5 @@
     </div>
 
   </div>
-  <div class="three-container">
-    NERKA 3D
-  </div>
+  <div class="three-container"></div>
 </div>

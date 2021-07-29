@@ -29,12 +29,23 @@ export class BackendDataLoaderService {
     return this.http.get<Triangle[]>("/api/triangles");
   }
 
-  public getTrianglesFromFiles(files): Observable<Triangle[]> {
+  public getTrianglesFromFiles(files, parameters): Observable<Triangle[]> {
     let formData = new FormData();
     for(let i=0; i<files.length; i++) {
       formData.append("files", files[i]);
     }
+    formData.append("interpolationMethod", parameters.interpolationMethod);
+    formData.append("numberOfPointsOnLayer", parameters.numberOfPointsOnLayer);
+    formData.append("numberOfIntermediateLayers", parameters.numberOfIntermediateLayers);
     return this.http.post<Triangle[]>("/api/trianglesFromFiles", formData);
+  }
+
+  public getLayersFromFiles(files, parameters): Observable<Layer[]> {
+    let formData = new FormData();
+    for(let i=0; i<files.length; i++) {
+      formData.append("files", files[i]);
+    }
+    return this.http.post<Layer[]>("/api/layersFromFiles", formData);
   }
 
 }

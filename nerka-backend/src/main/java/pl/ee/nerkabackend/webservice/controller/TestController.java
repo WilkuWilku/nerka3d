@@ -6,12 +6,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.tags.Param;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.methods.intermediateLayers.IntermediateLayersService;
 import pl.ee.nerkabackend.processing.methods.visualisation.Triangulation;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 import pl.ee.nerkabackend.processing.service.KidneyProcessingService;
+import pl.ee.nerkabackend.webservice.dto.KidneyDataDTO;
+import pl.ee.nerkabackend.webservice.dto.ParametersDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,19 +88,27 @@ public class TestController {
      ***/
 
     @PostMapping(value = "/trianglesFromFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    private ResponseEntity<List<Triangle>> trianglesFromFiles(@RequestParam("files") MultipartFile[] files) {
+    private ResponseEntity<List<Triangle>> trianglesFromFiles(ParametersDTO parameters, @RequestParam("files") MultipartFile[] files) {
         List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
-                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION_EQUINUMEROUS, 50);
+            MethodTypes.KidneyVisualisationMethodType.TRIANGULATION_EQUINUMEROUS, parameters.getNumberOfPointsOnLayer());
 
-        List<Layer> layersWithIntermediateLayers = intermediateLayersService.getLayersWithIntermediateLayers(layers, 5);
+        List<Layer> layersWithIntermediateLayers = intermediateLayersService
+            .getLayersWithIntermediateLayers(layers, parameters.getNumberOfIntermediateLayers(), parameters.getInterpolationMethod());
 
         List<Triangle> triangles = new ArrayList<>();
 
         for(int i=layersWithIntermediateLayers.size()-1; i>0; i--) {
             triangles.addAll(triangulation
-                    .getTrianglesBetweenLayers(layersWithIntermediateLayers.get(i), layersWithIntermediateLayers.get(i-1)));
+                .getTrianglesBetweenLayers(layersWithIntermediateLayers.get(i), layersWithIntermediateLayers.get(i-1)));
         }
 
         return ResponseEntity.ok(triangles);
+    }
+
+    @PostMapping(value = "/layersFromFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    private ResponseEntity<List<Layer>> layersFromFiles(@RequestParam("files") MultipartFile[] files) {
+        List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
+                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 0.0);
+        return ResponseEntity.ok(layers);
     }
 }

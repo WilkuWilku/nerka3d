@@ -37,6 +37,16 @@ export class AppComponent implements OnInit {
 
   loadedKidneyLayers: KidneyLayerData[] = [];
 
+  displayMode = 'kidney';
+  numberOfPointsOnLayer = 20;
+  numberOfIntermediateLayers = 1;
+  interpolationMethod = 'Linear';
+
+  files;
+
+  buttonEnabled = false;
+  isProcessing = false;
+
   constructor(private kidneyDataLoaderService: KidneyDataLoaderService,
               private backendDataLoaderService: BackendDataLoaderService) {
   }
@@ -44,7 +54,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.renderer = new WebGLRenderer();
-    this.renderer.setSize(window.innerWidth * 0.75, window.innerHeight * 0.75);
+    this.renderer.setSize(window.innerWidth - 300, window.innerHeight - 16);
     document.body.getElementsByClassName("three-container")[0].appendChild(this.renderer.domElement);
 
     this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 30000);
@@ -79,14 +89,55 @@ export class AppComponent implements OnInit {
   }
 
   onFileUpload(event) {
-    this.refreshScene();
-    this.backendDataLoaderService.getTrianglesFromFiles(event.target.files).subscribe(response => {
-      this.drawTriangles(response);
-    });
+    this.files = event.target.files;
+  }
+
+  onNumberOfPointsOnLayerChange(event) {
+    this.numberOfPointsOnLayer = event.target.value;
+  }
+
+  onNumberOfIntermediateLayersChange(event) {
+    this.numberOfIntermediateLayers = event.target.value;
+  }
+
+  onInterpolationMethodChange(event) {
+    this.interpolationMethod = event.target.value;
+  }
+
+  onDisplayModeChange(event) {
+    this.displayMode = event.target.value;
   }
 
   onLayerVisibilityChanged() {
     this.refreshScene();
+  }
+
+  getFileUploadStatusText() {
+    if (this.files && this.files.length > 0) {
+      this.buttonEnabled = true;
+      return 'Wgrano ' + this.files.length + " plików."
+    } else {
+      this.buttonEnabled = false;
+      return 'Nie wgrano plików.';
+    }
+  }
+
+  onVisualiseButtonClick() {
+    this.refreshScene();
+    const parameters = {
+      numberOfPointsOnLayer: this.numberOfPointsOnLayer,
+      interpolationMethod: this.interpolationMethod,
+      numberOfIntermediateLayers: this.numberOfIntermediateLayers
+    };
+    if (this.displayMode === 'kidney') {
+      this.backendDataLoaderService.getTrianglesFromFiles(this.files, parameters).subscribe(response => {
+        this.drawTriangles(response);
+      });
+    } else if (this.displayMode === 'layer') {
+      this.backendDataLoaderService.getLayersFromFiles(this.files, parameters).subscribe(response => {
+        this.drawLayersPoints(response);
+      });
+    }
   }
 
   refreshScene() {
