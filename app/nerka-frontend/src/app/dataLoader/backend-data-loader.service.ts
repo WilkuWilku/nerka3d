@@ -37,6 +37,7 @@ export class BackendDataLoaderService {
     formData.append("interpolationMethod", parameters.interpolationMethod);
     formData.append("numberOfPointsOnLayer", parameters.numberOfPointsOnLayer);
     formData.append("numberOfIntermediateLayers", parameters.numberOfIntermediateLayers);
+    formData.append("triangulationMethod", parameters.triangulationMethod);
     return this.http.post<Triangle[]>("/api/trianglesFromFiles", formData);
   }
 

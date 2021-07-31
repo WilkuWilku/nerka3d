@@ -1,9 +1,12 @@
 package pl.ee.nerkabackend.processing.methods.correspondingpoints.selector;
 
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import pl.ee.nerkabackend.processing.collections.LoopArrayList;
 import pl.ee.nerkabackend.processing.methods.correspondingpoints.divergence.SideCorrespondingPointsDivergence;
@@ -19,6 +22,7 @@ import java.util.stream.Stream;
 
 @Component
 @Slf4j
+@Scope(value = BeanDefinition.SCOPE_PROTOTYPE)
 public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSelector {
 
     @Autowired
@@ -28,13 +32,12 @@ public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSe
     @Qualifier("distanceSideCorrespondingPointsDivergence")
     private SideCorrespondingPointsDivergence sideCorrespondingPointsDivergence;
 
-    @Value("${quarter.corresponding.points.points.to.check.on.one.side}")
-    private Integer defaultPointsToCheckOnOneSide;
-
     @Value("${quarter.corresponding.points.distance.between.checked.points}")
-    private Integer defaultDistanceBetweenCheckedPoints;
+    @Setter
+    private Integer distanceBetweenCheckedPoints;
 
     @Value("${quarter.corresponding.points.checked.points.percent}")
+    @Setter
     private Double checkedPointsPercentOnLayer;
 
     @Override
@@ -58,8 +61,8 @@ public class QuarterCorrespondingPointsSelector implements CorrespondingPointsSe
         int topEdgePointIndex = topLayer.getPoints().indexOf(topEdgePoint);
         int bottomEdgePointIndex = bottomLayer.getPoints().indexOf(bottomEdgePoint);
 
-        List<LayerPoint> pointsAroundTopEdgePoint = getAllCheckedPointsAround(topLayer.getPoints(), topEdgePointIndex, checkedPointsPercentOnLayer, defaultDistanceBetweenCheckedPoints);
-        List<LayerPoint> pointsAroundBottomEdgePoint = getAllCheckedPointsAround(bottomLayer.getPoints(), bottomEdgePointIndex, checkedPointsPercentOnLayer, defaultDistanceBetweenCheckedPoints);
+        List<LayerPoint> pointsAroundTopEdgePoint = getAllCheckedPointsAround(topLayer.getPoints(), topEdgePointIndex, checkedPointsPercentOnLayer, distanceBetweenCheckedPoints);
+        List<LayerPoint> pointsAroundBottomEdgePoint = getAllCheckedPointsAround(bottomLayer.getPoints(), bottomEdgePointIndex, checkedPointsPercentOnLayer, distanceBetweenCheckedPoints);
 
         SideCorrespondingPoints bestCorrespondingPoints = pointsAroundTopEdgePoint.stream()
                 .map(topPoint -> getBestCorrespondingPointsFromTopPoint(topPoint, pointsAroundBottomEdgePoint, layerSide))

@@ -42,6 +42,7 @@ export class AppComponent implements OnInit {
   numberOfPointsOnLayer = 20;
   numberOfIntermediateLayers = 1;
   interpolationMethod = 'Linear';
+  triangulationMethod = 'BY_POINTS_DISTANCE';
 
   files;
 
@@ -111,6 +112,10 @@ export class AppComponent implements OnInit {
     this.interpolationMethod = event.target.value;
   }
 
+  onTriangulationMethodChange(event) {
+    this.triangulationMethod = event.target.value;
+  }
+
   onDisplayModeChange(event) {
     this.displayMode = event.target.value;
   }
@@ -133,7 +138,8 @@ export class AppComponent implements OnInit {
     const parameters = {
       numberOfPointsOnLayer: this.numberOfPointsOnLayer,
       interpolationMethod: this.interpolationMethod,
-      numberOfIntermediateLayers: this.numberOfIntermediateLayers
+      numberOfIntermediateLayers: this.numberOfIntermediateLayers,
+      triangulationMethod: this.triangulationMethod
     };
     if (this.displayMode === 'kidney') {
       this.backendDataLoaderService.getTrianglesFromFiles(this.files, parameters).subscribe(response => {

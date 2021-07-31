@@ -2,18 +2,18 @@ package pl.ee.nerkabackend.webservice.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.tags.Param;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.methods.intermediateLayers.IntermediateLayersService;
-import pl.ee.nerkabackend.processing.methods.visualisation.Triangulation;
+import pl.ee.nerkabackend.processing.methods.visualisation.TriangulationService;
+import pl.ee.nerkabackend.processing.methods.visualisation.builder.TriangulationServiceBuilder;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 import pl.ee.nerkabackend.processing.service.KidneyProcessingService;
-import pl.ee.nerkabackend.webservice.dto.KidneyDataDTO;
 import pl.ee.nerkabackend.webservice.dto.ParametersDTO;
 
 import java.util.ArrayList;
@@ -30,7 +30,8 @@ public class TestController {
     private IntermediateLayersService intermediateLayersService;
 
     @Autowired
-    private Triangulation triangulation;
+    private TriangulationServiceBuilder triangulationServiceBuilder;
+
 
     @GetMapping("/layers")
     private ResponseEntity<List<Layer>> getLayers() {
@@ -74,7 +75,7 @@ public class TestController {
         List<Triangle> triangles = new ArrayList<>();
 
         for(int i=layers.size()-1; i>0; i--) {
-            triangles.addAll(triangulation.getTrianglesBetweenLayers(layers.get(i), layers.get(i-1)));
+//            triangles.addAll(triangulationService.getTrianglesBetweenLayers(layers.get(i), layers.get(i-1)));
         }
 
         return ResponseEntity.ok(triangles);
@@ -96,9 +97,12 @@ public class TestController {
             .getLayersWithIntermediateLayers(layers, parameters.getNumberOfIntermediateLayers(), parameters.getInterpolationMethod());
 
         List<Triangle> triangles = new ArrayList<>();
+        TriangulationService triangulationService = triangulationServiceBuilder
+                .withTriangulationMethod(parameters.getTriangulationMethod())
+                .build();
 
         for(int i=layersWithIntermediateLayers.size()-1; i>0; i--) {
-            triangles.addAll(triangulation
+            triangles.addAll(triangulationService
                 .getTrianglesBetweenLayers(layersWithIntermediateLayers.get(i), layersWithIntermediateLayers.get(i-1)));
         }
 

@@ -26,6 +26,15 @@
           <option value="CubicSpline">Cubic Spline</option>
         </select>
       </div>
+
+      <div class="parameter-input">
+        <label htmlFor="triangulationMethodSelect">Metoda triangulacji</label>
+        <select  id="triangulationMethodSelect" (change)="onTriangulationMethodChange($event)">
+          <option value="BY_POINTS_DISTANCE">Najmniejsza odległość</option>
+          <option value="BY_ANGLE">Najmniejszy maksymalny kąt</option>
+          <option value="BY_LENGTH_SUM">Najmniejszy obwód</option>
+        </select>
+      </div>
     </div>
     <div class="file-upload">
       <label class="file-upload-label">

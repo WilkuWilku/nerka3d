@@ -1,11 +1,14 @@
 package pl.ee.nerkabackend.processing.methods.visualisation;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.methods.correspondingpoints.selector.CorrespondingPointsSelector;
@@ -25,8 +28,9 @@ import java.util.List;
 import java.util.stream.DoubleStream;
 
 @Slf4j
-@Component
-public class Triangulation implements VisualisationMethod {
+@Service
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
+public class TriangulationService implements VisualisationMethod {
 
     @Autowired
     @Qualifier("quarterCorrespondingPointsSelector")
@@ -39,6 +43,7 @@ public class Triangulation implements VisualisationMethod {
     private TriangulationMethodResolver triangulationMethodResolver;
 
     @Value("${triangulation.method.type}")
+    @Setter
     private MethodTypes.TriangulationMethodType triangulationMethodType;
 
     @Value("${triangulation.reporting.enabled}")
