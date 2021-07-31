@@ -16,6 +16,17 @@ public class MethodTypes {
         PLACEHOLDER_METHOD
     }
 
+    public enum CorrespondingPointsSelectionMethodType {
+        SIDE,
+        QUARTER
+    }
+
+    public enum TriangulationMethodType {
+        BY_ANGLE,
+        BY_LENGTH_SUM,
+        BY_POINTS_DISTANCE
+    }
+
     public enum KidneyVisualisationMethodType {
         TRIANGULATION(VisualisationMethodType.TRIANGULATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED),
         TRIANGULATION_EQUINUMEROUS(VisualisationMethodType.TRIANGULATION, PointsDeterminationMethodType.EVENLY_DISTRIBUTED_EQUINUMEROUS);
