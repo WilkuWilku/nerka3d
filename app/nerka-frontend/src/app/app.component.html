@@ -1,4 +1,4 @@
-<div class="app-container">
+<div class="app-container" [ngClass]="{'waiting': isProcessing}">
 
   <div class="parameters-section">
     <div class="parameter-input">
@@ -10,12 +10,12 @@
     </div>
     <div *ngIf="displayMode === 'kidney'">
       <div class="parameter-input">
-        <label htmlFor="numberOfPointsOnLayer">Ilość punktów na warstwę</label>
+        <label htmlFor="numberOfPointsOnLayer">Liczba punktów na warstwę</label>
         <input id="numberOfPointsOnLayer" type="number" value="{{numberOfPointsOnLayer}}" (change)="onNumberOfPointsOnLayerChange($event)"/>
       </div>
 
       <div class="parameter-input">
-        <label htmlFor="numberOfIntermediateLayers">Ilość warstw pośrednich</label>
+        <label htmlFor="numberOfIntermediateLayers">Stopień zwielokrotnienia warstw</label>
         <input ng id="numberOfIntermediateLayers" type="number" value="{{numberOfIntermediateLayers}}" (change)="onNumberOfIntermediateLayersChange($event)"/>
       </div>
 
@@ -49,14 +49,6 @@
       <button (click)="onVisualiseButtonClick()" [disabled]="!buttonEnabled">Wizualizuj</button>
     </div>
 
-
-    <div class="layers-list" *ngIf="loadedKidneyLayers.length > 0">
-      <span class="layers-list-title">WARSTWY</span>
-      <div class="layer-list-item" *ngFor="let layer of loadedKidneyLayers">
-        <input type="checkbox" [(ngModel)]="layer.isVisible" (ngModelChange)="onLayerVisibilityChanged()">
-        <span class="layer-list-item-name">{{layer.layerName}} / {{layer.rawLayer.header.objectType}} / {{layer.rawLayer.header.layerNumber}}-{{layer.rawLayer.header.multipliedLayerIndex}}</span>
-      </div>
-    </div>
 
   </div>
   <div class="three-container"></div>

@@ -28,15 +28,11 @@ import {Layer} from "./dto/layer";
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  jsonData: any;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
-  pointsCount = 0;
   controls: OrbitControls;
   light: PointLight;
-
-  loadedKidneyLayers: KidneyLayerData[] = [];
 
   displayMode = 'kidney';
   numberOfPointsOnLayer = 20;
@@ -120,10 +116,6 @@ export class AppComponent implements OnInit {
     this.displayMode = event.target.value;
   }
 
-  onLayerVisibilityChanged() {
-    this.refreshScene();
-  }
-
   getFileUploadStatusText() {
     if (this.files && this.files.length > 0) {
       this.buttonEnabled = true;
@@ -142,14 +134,18 @@ export class AppComponent implements OnInit {
       triangulationMethod: this.triangulationMethod
     };
     if (this.displayMode === 'kidney') {
+      this.isProcessing = true;
       this.backendDataLoaderService.getTrianglesFromFiles(this.files, parameters).subscribe(response => {
         this.refreshScene();
         this.drawTriangles(response);
+        this.isProcessing = false;
       });
     } else if (this.displayMode === 'layer') {
+      this.isProcessing = true;
       this.backendDataLoaderService.getLayersFromFiles(this.files, parameters).subscribe(response => {
         this.refreshScene();
         this.drawLayersPoints(response);
+        this.isProcessing = false;
       });
     }
   }
@@ -161,13 +157,6 @@ export class AppComponent implements OnInit {
     gridHelper.translateX(2500);
     gridHelper.translateZ(2500);
     this.scene.add(axesHelper, gridHelper);
-
-    this.loadedKidneyLayers.forEach(layerData => {
-      if(layerData.isVisible) {
-        this.scene.add(layerData.layerPoints)
-      }
-    });
-
     this.scene.add(this.camera)
   }
 
