@@ -34,6 +34,7 @@ export class AppComponent implements OnInit {
   renderer: WebGLRenderer;
   pointsCount = 0;
   controls: OrbitControls;
+  light: PointLight;
 
   loadedKidneyLayers: KidneyLayerData[] = [];
 
@@ -68,6 +69,12 @@ export class AppComponent implements OnInit {
     this.scene.background = new Color(0xf2f2f2);
 
     this.refreshScene();
+
+    this.light = new PointLight();
+    this.light.intensity = 1;
+    this.light.decay = 2;
+    this.camera.add(this.light);
+
     this.renderer.render( this.scene, this.camera );
 
     this.animate();
@@ -123,7 +130,6 @@ export class AppComponent implements OnInit {
   }
 
   onVisualiseButtonClick() {
-    this.refreshScene();
     const parameters = {
       numberOfPointsOnLayer: this.numberOfPointsOnLayer,
       interpolationMethod: this.interpolationMethod,
@@ -131,10 +137,12 @@ export class AppComponent implements OnInit {
     };
     if (this.displayMode === 'kidney') {
       this.backendDataLoaderService.getTrianglesFromFiles(this.files, parameters).subscribe(response => {
+        this.refreshScene();
         this.drawTriangles(response);
       });
     } else if (this.displayMode === 'layer') {
       this.backendDataLoaderService.getLayersFromFiles(this.files, parameters).subscribe(response => {
+        this.refreshScene();
         this.drawLayersPoints(response);
       });
     }
@@ -148,17 +156,13 @@ export class AppComponent implements OnInit {
     gridHelper.translateZ(2500);
     this.scene.add(axesHelper, gridHelper);
 
-    const light = new PointLight();
-    light.intensity = 0.5;
-    light.decay = 2;
-    this.camera.add(light)
-    this.scene.add(this.camera)
-
     this.loadedKidneyLayers.forEach(layerData => {
       if(layerData.isVisible) {
         this.scene.add(layerData.layerPoints)
       }
     });
+
+    this.scene.add(this.camera)
   }
 
   drawTriangles(triangles: Triangle[]) {
