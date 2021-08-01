@@ -3,37 +3,53 @@
   <div class="parameters-section">
     <div class="parameter-input">
       <label htmlFor="displayMode">Tryb wyświetlania</label>
-      <select id="diplayMode" (change)="onDisplayModeChange($event)">
+      <select id="diplayMode" [(ngModel)]="displayMode">
         <option value="kidney">Nerka</option>
         <option value="layer">Warstwy</option>
       </select>
     </div>
     <div *ngIf="displayMode === 'kidney'">
       <div class="parameter-input">
-        <label htmlFor="numberOfPointsOnLayer">Liczba punktów na warstwę</label>
-        <input id="numberOfPointsOnLayer" type="number" value="{{numberOfPointsOnLayer}}" (change)="onNumberOfPointsOnLayerChange($event)"/>
-      </div>
-
-      <div class="parameter-input">
-        <label htmlFor="numberOfIntermediateLayers">Stopień zwielokrotnienia warstw</label>
-        <input ng id="numberOfIntermediateLayers" type="number" value="{{numberOfIntermediateLayers}}" (change)="onNumberOfIntermediateLayersChange($event)"/>
-      </div>
-
-      <div class="parameter-input">
-        <label htmlFor="interpolationMethodSelect">Metoda interpolacji</label>
-        <select  id="interpolationMethodSelect" (change)="onInterpolationMethodChange($event)">
-          <option value="Linear">Linear</option>
-          <option value="CubicSpline">Cubic Spline</option>
+        <label htmlFor="pointsDeterminationMethodType">Tryb redukcji punktów</label>
+        <select id="pointsDeterminationMethodType" [(ngModel)]="parameters.pointsDeterminationMethod">
+          <option value="EVENLY_DISTRIBUTED_EQUINUMEROUS">Stały</option>
+          <option value="EVENLY_DISTRIBUTED">Procentowy</option>
         </select>
       </div>
+      <div class="parameter-input" *ngIf="parameters.pointsDeterminationMethod === 'EVENLY_DISTRIBUTED'">
+        <label htmlFor="pointsPercent">Procent punktów na warstwę</label>
+        <input id="pointsPercent" type="number" step="0.1" min="0" max="100" [(ngModel)]="parameters.displayedPointsPercent"/>
+      </div>
+      <div *ngIf="parameters.pointsDeterminationMethod === 'EVENLY_DISTRIBUTED_EQUINUMEROUS'">
+        <div class="parameter-input" >
+          <label htmlFor="numberOfPointsOnLayer">Liczba punktów na warstwę</label>
+          <input id="numberOfPointsOnLayer" type="number" [(ngModel)]="parameters.numberOfPointsOnLayer"/>
+        </div>
 
+        <div class="parameter-input">
+          <label htmlFor="numberOfIntermediateLayers">Stopień zwielokrotnienia warstw</label>
+          <input id="numberOfIntermediateLayers" min="1" max="100" type="number" [(ngModel)]="parameters.numberOfIntermediateLayers"/>
+        </div>
+
+        <div class="parameter-input">
+          <label htmlFor="interpolationMethodSelect">Metoda interpolacji</label>
+          <select id="interpolationMethodSelect" [(ngModel)]="parameters.interpolationMethod">
+            <option value="Linear">Linear</option>
+            <option value="CubicSpline">Cubic Spline</option>
+          </select>
+        </div>
+      </div>
       <div class="parameter-input">
         <label htmlFor="triangulationMethodSelect">Metoda triangulacji</label>
-        <select  id="triangulationMethodSelect" (change)="onTriangulationMethodChange($event)">
+        <select id="triangulationMethodSelect" [(ngModel)]="parameters.triangulationMethod">
           <option value="BY_POINTS_DISTANCE">Najmniejsza odległość</option>
           <option value="BY_ANGLE">Najmniejszy maksymalny kąt</option>
           <option value="BY_LENGTH_SUM">Najmniejszy obwód</option>
         </select>
+      </div>
+      <div class="parameter-input" *ngIf="parameters.pointsDeterminationMethod === 'EVENLY_DISTRIBUTED'">
+        <label htmlFor="indexesRatioDiffCoefficient">Współczynnik IndexesRatioDiff</label>
+        <input id="indexesRatioDiffCoefficient" min="0" max="1000" type="number" [(ngModel)]="parameters.indexesRatioDiffCoefficient"/>
       </div>
     </div>
     <div class="file-upload">
@@ -48,7 +64,6 @@
     <div class="visualise-button">
       <button (click)="onVisualiseButtonClick()" [disabled]="!buttonEnabled">Wizualizuj</button>
     </div>
-
 
   </div>
   <div class="three-container"></div>

@@ -6,8 +6,11 @@ import pl.ee.nerkabackend.processing.methods.intermediateLayers.IntermediateLaye
 
 @Data
 public class ParametersDTO {
+    private double displayedPointsPercent;
     private int numberOfPointsOnLayer;
     private int numberOfIntermediateLayers;
     private IntermediateLayersService.InterpolationType interpolationMethod;
     private MethodTypes.TriangulationMethodType triangulationMethod;
+    private MethodTypes.PointsDeterminationMethodType pointsDeterminationMethod;
+    private double indexesRatioDiffCoefficient;
 }

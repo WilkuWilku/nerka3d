@@ -1,4 +1,4 @@
-package pl.ee.nerkabackend.processing.methods.visualisation;
+package pl.ee.nerkabackend.processing.methods.visualisation.triangulation;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.methods.correspondingpoints.selector.CorrespondingPointsSelector;
+import pl.ee.nerkabackend.processing.methods.visualisation.VisualisationMethod;
+import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.builder.TriangulationMethodBuilder;
+import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.resolver.TriangulationMethodResolver;
 import pl.ee.nerkabackend.processing.model.CorrespondingPoints;
 import pl.ee.nerkabackend.processing.model.KidneyVisualisationObject;
 import pl.ee.nerkabackend.processing.model.Layer;
@@ -40,11 +42,14 @@ public class TriangulationService implements VisualisationMethod {
     private ReportingService reportingService;
 
     @Autowired
-    private TriangulationMethodResolver triangulationMethodResolver;
+    private TriangulationMethodBuilder triangulationMethodBuilder;
 
     @Value("${triangulation.method.type}")
     @Setter
     private MethodTypes.TriangulationMethodType triangulationMethodType;
+
+    @Setter
+    private Double indexRatioDiffCoefficient;
 
     @Value("${triangulation.reporting.enabled}")
     private Boolean isReportingEnabled;
@@ -79,7 +84,10 @@ public class TriangulationService implements VisualisationMethod {
         List<Measurement> measurements = new ArrayList<>();
         int step = 0;
 
-        TriangulationMethod triangulationMethod = triangulationMethodResolver.getTriangulationMethod(triangulationMethodType);
+        AbstractTriangulationMethod triangulationMethod = triangulationMethodBuilder
+                .withTriangulationMethodType(triangulationMethodType)
+                .withIndexesRatioDiffCoefficient(indexRatioDiffCoefficient)
+                .build();
 
         do {
             step++;

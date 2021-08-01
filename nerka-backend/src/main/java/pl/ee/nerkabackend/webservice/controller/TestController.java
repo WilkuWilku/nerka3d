@@ -2,18 +2,18 @@ package pl.ee.nerkabackend.webservice.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
-import pl.ee.nerkabackend.processing.methods.intermediateLayers.IntermediateLayersService;
-import pl.ee.nerkabackend.processing.methods.visualisation.TriangulationService;
-import pl.ee.nerkabackend.processing.methods.visualisation.builder.TriangulationServiceBuilder;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 import pl.ee.nerkabackend.processing.service.KidneyProcessingService;
+import pl.ee.nerkabackend.processing.service.VisualisationService;
 import pl.ee.nerkabackend.webservice.dto.ParametersDTO;
 
 import java.util.ArrayList;
@@ -27,10 +27,7 @@ public class TestController {
     private KidneyProcessingService kidneyProcessingService;
 
     @Autowired
-    private IntermediateLayersService intermediateLayersService;
-
-    @Autowired
-    private TriangulationServiceBuilder triangulationServiceBuilder;
+    private VisualisationService visualisationService;
 
 
     @GetMapping("/layers")
@@ -74,7 +71,7 @@ public class TestController {
                 MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 5.0);
         List<Triangle> triangles = new ArrayList<>();
 
-        for(int i=layers.size()-1; i>0; i--) {
+        for (int i = layers.size() - 1; i > 0; i--) {
 //            triangles.addAll(triangulationService.getTrianglesBetweenLayers(layers.get(i), layers.get(i-1)));
         }
 
@@ -90,22 +87,7 @@ public class TestController {
 
     @PostMapping(value = "/trianglesFromFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     private ResponseEntity<List<Triangle>> trianglesFromFiles(ParametersDTO parameters, @RequestParam("files") MultipartFile[] files) {
-        List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
-            MethodTypes.KidneyVisualisationMethodType.TRIANGULATION_EQUINUMEROUS, parameters.getNumberOfPointsOnLayer());
-
-        List<Layer> layersWithIntermediateLayers = intermediateLayersService
-            .getLayersWithIntermediateLayers(layers, parameters.getNumberOfIntermediateLayers(), parameters.getInterpolationMethod());
-
-        List<Triangle> triangles = new ArrayList<>();
-        TriangulationService triangulationService = triangulationServiceBuilder
-                .withTriangulationMethod(parameters.getTriangulationMethod())
-                .build();
-
-        for(int i=layersWithIntermediateLayers.size()-1; i>0; i--) {
-            triangles.addAll(triangulationService
-                .getTrianglesBetweenLayers(layersWithIntermediateLayers.get(i), layersWithIntermediateLayers.get(i-1)));
-        }
-
+        List<Triangle> triangles = visualisationService.getKidneyVisualisationFromFiles(parameters, files);
         return ResponseEntity.ok(triangles);
     }
 

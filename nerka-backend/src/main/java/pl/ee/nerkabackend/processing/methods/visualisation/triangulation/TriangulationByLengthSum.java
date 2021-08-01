@@ -1,24 +1,32 @@
-package pl.ee.nerkabackend.processing.methods.visualisation;
+package pl.ee.nerkabackend.processing.methods.visualisation.triangulation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 
-@Service
+import javax.annotation.PostConstruct;
+
+@Component
 @Slf4j
-public class TriangulationByLengthSum implements TriangulationMethod {
+@RequestScope
+public class TriangulationByLengthSum extends AbstractTriangulationMethod {
 
     @Value("${triangulation.length.sum.indexes.ratio.diff.coefficient}")
-    private Double lengthSumIndexesRatioDiffCoefficient;
+    private Double defaultIndexesRatioDiffCoefficient;
+
+    @PostConstruct
+    private void setDefaultIndexesRatioDiffCoefficient() {
+        super.setDefaultIndexesRatioDiffCoefficient(defaultIndexesRatioDiffCoefficient);
+    }
 
     @Override
     public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint, LayerPoint nextTopPoint, LayerPoint nextBottomPoint, double indexesRatioDiff) {
-        log.info("getNextPoint() [TriangulationByLengthSum] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, indexesRatioDiff: {}",
-                topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiff);
+        log.info("getNextPoint() [TriangulationByLengthSum] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, coef: {}, indexesRatioDiff: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiffCoefficient, indexesRatioDiff);
 
         if(nextTopPoint == null && nextBottomPoint == null) {
             throw new TriangulationException("No next point specified for topPoint: "+topPoint.toString()+", bottomPoint: "+bottomPoint.toString());
@@ -35,8 +43,8 @@ public class TriangulationByLengthSum implements TriangulationMethod {
         Triangle triangleOptionTop = new Triangle(topPoint, bottomPoint, nextTopPoint);
         Triangle triangleOptionBottom = new Triangle(topPoint, bottomPoint, nextBottomPoint);
         double lengthSumOfTriangleOptionTop = getTriangleEdgesLengthSum(triangleOptionTop);
-        double lengthSumOfTriangleOptionBottom = getTriangleEdgesLengthSum(triangleOptionBottom)+indexesRatioDiff*lengthSumIndexesRatioDiffCoefficient;
-        log.debug("top sum: {}, bottom sum: {}, bottom sum with ratio correction: {}", lengthSumOfTriangleOptionTop, lengthSumOfTriangleOptionBottom-indexesRatioDiff*lengthSumIndexesRatioDiffCoefficient, lengthSumOfTriangleOptionBottom);
+        double lengthSumOfTriangleOptionBottom = getTriangleEdgesLengthSum(triangleOptionBottom)+indexesRatioDiff*indexesRatioDiffCoefficient;
+        log.debug("top sum: {}, bottom sum: {}, bottom sum with ratio correction: {}", lengthSumOfTriangleOptionTop, lengthSumOfTriangleOptionBottom-indexesRatioDiff*indexesRatioDiffCoefficient, lengthSumOfTriangleOptionBottom);
 
         if (lengthSumOfTriangleOptionBottom < lengthSumOfTriangleOptionTop) {
             log.debug("getNextPoint() [TriangulationByLengthSum] end - next point is bottom point");

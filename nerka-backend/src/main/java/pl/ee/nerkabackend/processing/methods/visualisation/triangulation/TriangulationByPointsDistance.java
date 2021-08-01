@@ -1,25 +1,33 @@
-package pl.ee.nerkabackend.processing.methods.visualisation;
+package pl.ee.nerkabackend.processing.methods.visualisation.triangulation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 
-@Service
+import javax.annotation.PostConstruct;
+
+@Component
 @Slf4j
-public class TriangulationByPointsDistance implements TriangulationMethod {
+@RequestScope
+public class TriangulationByPointsDistance extends AbstractTriangulationMethod {
 
     @Value("${triangulation.points.distance.indexes.ratio.diff.coefficient}")
-    private Double pointsDistanceIndexesRatioCoefficient;
+    private Double defaultIndexesRatioDiffCoefficient;
+
+    @PostConstruct
+    private void setDefaultIndexesRatioDiffCoefficient() {
+        super.setDefaultIndexesRatioDiffCoefficient(defaultIndexesRatioDiffCoefficient);
+    }
 
     @Override
     public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint,
                                                             LayerPoint nextTopPoint, LayerPoint nextBottomPoint,
                                                             double indexesRatioDiff) {
-        log.info("getNextPoint() [TriangulationByPointsDistance] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, indexesRatioDiff: {}",
-                topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiff);
+        log.info("getNextPoint() [TriangulationByPointsDistance] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, coef: {}, indexesRatioDiff: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiffCoefficient, indexesRatioDiff);
 
         if(nextTopPoint == null && nextBottomPoint == null) {
             throw new TriangulationException("No next point specified for topPoint: "+topPoint.toString()+", bottomPoint: "+bottomPoint.toString());
@@ -34,8 +42,8 @@ public class TriangulationByPointsDistance implements TriangulationMethod {
         }
 
         double distanceToNextTopPoint = getDistanceBetweenPoints(nextTopPoint, bottomPoint);
-        double distanceToNextBottomPoint = getDistanceBetweenPoints(nextBottomPoint, topPoint)-indexesRatioDiff* pointsDistanceIndexesRatioCoefficient;
-        log.debug("top length: {}, bottom length: {}, bottom length with ratio correction: {}", distanceToNextTopPoint, distanceToNextBottomPoint+indexesRatioDiff*pointsDistanceIndexesRatioCoefficient, distanceToNextBottomPoint);
+        double distanceToNextBottomPoint = getDistanceBetweenPoints(nextBottomPoint, topPoint)-indexesRatioDiff*indexesRatioDiffCoefficient;
+        log.debug("top length: {}, bottom length: {}, bottom length with ratio correction: {}", distanceToNextTopPoint, distanceToNextBottomPoint+indexesRatioDiff*indexesRatioDiffCoefficient, distanceToNextBottomPoint);
 
         if (distanceToNextBottomPoint < distanceToNextTopPoint) {
             log.debug("getNextPoint() [TriangulationByPointsDistance] end - next point is bottom point");

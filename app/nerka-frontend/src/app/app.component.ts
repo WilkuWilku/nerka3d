@@ -21,6 +21,7 @@ import {KidneyDataLoaderService} from "./dataLoader/kidney-data-loader.service";
 import {BackendDataLoaderService} from "./dataLoader/backend-data-loader.service";
 import {Triangle} from "./dto/triangle";
 import {Layer} from "./dto/layer";
+import {Parameters} from "./dto/parameters";
 
 @Component({
   selector: 'app-root',
@@ -34,11 +35,8 @@ export class AppComponent implements OnInit {
   controls: OrbitControls;
   light: PointLight;
 
+  parameters: Parameters;
   displayMode = 'kidney';
-  numberOfPointsOnLayer = 20;
-  numberOfIntermediateLayers = 1;
-  interpolationMethod = 'Linear';
-  triangulationMethod = 'BY_POINTS_DISTANCE';
 
   files;
 
@@ -76,6 +74,8 @@ export class AppComponent implements OnInit {
 
     this.animate();
 
+    this.initParameters();
+
     // this.backendDataLoaderService.getTestLayers().subscribe(response => {
     //   this.drawLayersPoints(response);
     // })
@@ -86,6 +86,18 @@ export class AppComponent implements OnInit {
 
   }
 
+  initParameters() {
+    this.parameters = {
+      displayedPointsPercent: 3,
+      numberOfPointsOnLayer: 20,
+      interpolationMethod: 'Linear',
+      numberOfIntermediateLayers: 1,
+      triangulationMethod: 'BY_POINTS_DISTANCE',
+      pointsDeterminationMethod: 'EVENLY_DISTRIBUTED_EQUINUMEROUS',
+      indexesRatioDiffCoefficient: 0
+    }
+  }
+
   animate() {
     requestAnimationFrame( () => this.animate() );
     this.controls.update();
@@ -94,26 +106,6 @@ export class AppComponent implements OnInit {
 
   onFileUpload(event) {
     this.files = event.target.files;
-  }
-
-  onNumberOfPointsOnLayerChange(event) {
-    this.numberOfPointsOnLayer = event.target.value;
-  }
-
-  onNumberOfIntermediateLayersChange(event) {
-    this.numberOfIntermediateLayers = event.target.value;
-  }
-
-  onInterpolationMethodChange(event) {
-    this.interpolationMethod = event.target.value;
-  }
-
-  onTriangulationMethodChange(event) {
-    this.triangulationMethod = event.target.value;
-  }
-
-  onDisplayModeChange(event) {
-    this.displayMode = event.target.value;
   }
 
   getFileUploadStatusText() {
@@ -127,22 +119,16 @@ export class AppComponent implements OnInit {
   }
 
   onVisualiseButtonClick() {
-    const parameters = {
-      numberOfPointsOnLayer: this.numberOfPointsOnLayer,
-      interpolationMethod: this.interpolationMethod,
-      numberOfIntermediateLayers: this.numberOfIntermediateLayers,
-      triangulationMethod: this.triangulationMethod
-    };
     if (this.displayMode === 'kidney') {
       this.isProcessing = true;
-      this.backendDataLoaderService.getTrianglesFromFiles(this.files, parameters).subscribe(response => {
+      this.backendDataLoaderService.getTrianglesFromFiles(this.files, this.parameters).subscribe(response => {
         this.refreshScene();
         this.drawTriangles(response);
         this.isProcessing = false;
       });
     } else if (this.displayMode === 'layer') {
       this.isProcessing = true;
-      this.backendDataLoaderService.getLayersFromFiles(this.files, parameters).subscribe(response => {
+      this.backendDataLoaderService.getLayersFromFiles(this.files, this.parameters).subscribe(response => {
         this.refreshScene();
         this.drawLayersPoints(response);
         this.isProcessing = false;

@@ -23,8 +23,7 @@ public class KidneyProcessingService {
 
     @Autowired
     private LayerProcessingService layerProcessingService;
-    @Autowired
-    private VisualisationService visualisationService;
+
     @Autowired
     private DataLoader dataLoader;
 
@@ -42,24 +41,6 @@ public class KidneyProcessingService {
             Object... params) {
         List<Layer> layers = getProcessedLayers(files, type, params);
         return layers;
-    }
-
-    /**
-     * This method is a placeholder for returning visualisation object. TODO
-     * @param filenamesToLoad
-     * @param type
-     * @param params
-     * @return
-     */
-    public KidneyVisualisationObject getKidneyVisualisation(
-        List<String> filenamesToLoad,
-        MethodTypes.KidneyVisualisationMethodType type,
-        Object... params
-    ) {
-        List<Layer> layers = getProcessedLayers(filenamesToLoad, type, params);
-        KidneyVisualisationObject kidneyVisualisationObject = this.visualisationService
-                .processLayersIntoKidneyVisualisation(layers, type.getVisualisationMethodType(), params);
-        return kidneyVisualisationObject;
     }
 
     private List<Layer> getProcessedLayers(List<String> filenamesToLoad, MethodTypes.KidneyVisualisationMethodType type, Object[] params) {

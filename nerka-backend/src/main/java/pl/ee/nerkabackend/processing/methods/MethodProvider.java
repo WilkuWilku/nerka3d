@@ -3,7 +3,7 @@ package pl.ee.nerkabackend.processing.methods;
 import pl.ee.nerkabackend.processing.methods.pointsdetermination.EvenlyDistributed;
 import pl.ee.nerkabackend.processing.methods.pointsdetermination.EvenlyDistributedEquinumerous;
 import pl.ee.nerkabackend.processing.methods.pointsdetermination.PointsDeterminationMethod;
-import pl.ee.nerkabackend.processing.methods.visualisation.TriangulationService;
+import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.TriangulationService;
 import pl.ee.nerkabackend.processing.methods.visualisation.VisualisationMethod;
 
 public class MethodProvider {

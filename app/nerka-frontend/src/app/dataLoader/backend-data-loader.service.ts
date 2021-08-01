@@ -38,6 +38,9 @@ export class BackendDataLoaderService {
     formData.append("numberOfPointsOnLayer", parameters.numberOfPointsOnLayer);
     formData.append("numberOfIntermediateLayers", parameters.numberOfIntermediateLayers);
     formData.append("triangulationMethod", parameters.triangulationMethod);
+    formData.append("pointsDeterminationMethod", parameters.pointsDeterminationMethod);
+    formData.append("displayedPointsPercent", parameters.displayedPointsPercent);
+    formData.append("indexesRatioDiffCoefficient", parameters.indexesRatioDiffCoefficient);
     return this.http.post<Triangle[]>("/api/trianglesFromFiles", formData);
   }
 

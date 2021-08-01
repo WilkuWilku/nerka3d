@@ -1,24 +1,34 @@
-package pl.ee.nerkabackend.processing.methods.visualisation;
+package pl.ee.nerkabackend.processing.methods.visualisation.triangulation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 
+import javax.annotation.PostConstruct;
 import java.util.stream.DoubleStream;
 
-@Service
+@Component
 @Slf4j
-public class TriangulationByAngle implements TriangulationMethod {
+@RequestScope
+public class TriangulationByAngle extends AbstractTriangulationMethod {
 
     @Value("${triangulation.max.angle.indexes.ratio.diff.coefficient}")
-    private Double maxAngleIndexesRatioDiffCoefficient;
+    private Double defaultIndexesRatioDiffCoefficient;
+
+    @PostConstruct
+    private void setDefaultIndexesRatioDiffCoefficient() {
+        super.setDefaultIndexesRatioDiffCoefficient(defaultIndexesRatioDiffCoefficient);
+    }
 
     @Override
     public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint, LayerPoint nextTopPoint, LayerPoint nextBottomPoint, double indexesRatioDiff) {
+        log.info("getNextPoint() [TriangulationByAngle] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, coef: {}, indexesRatioDiff: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiffCoefficient, indexesRatioDiff);
+
         if(nextTopPoint == null && nextBottomPoint == null) {
             throw new TriangulationException("No next point specified for topPoint: "+topPoint.toString()+", bottomPoint: "+bottomPoint.toString());
         }
@@ -31,12 +41,11 @@ public class TriangulationByAngle implements TriangulationMethod {
             return nextTopPoint;
         }
 
-        log.info("getNextPoint() [TriangulationByAngle] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, indexesRatioDiff: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiff);
         Triangle triangleOptionTop = new Triangle(topPoint, bottomPoint, nextTopPoint);
         Triangle triangleOptionBottom = new Triangle(topPoint, bottomPoint, nextBottomPoint);
         double maxAngleOfTriangleOptionTop = getMaxAngleOfTriangle(triangleOptionTop);
-        double maxAngleOfTriangleOptionBottom = getMaxAngleOfTriangle(triangleOptionBottom)+indexesRatioDiff*maxAngleIndexesRatioDiffCoefficient;
-        log.debug("top max: {}, bottom max: {}, bottom max with ratio correction: {}", maxAngleOfTriangleOptionTop, maxAngleOfTriangleOptionBottom-indexesRatioDiff*maxAngleIndexesRatioDiffCoefficient, maxAngleOfTriangleOptionBottom);
+        double maxAngleOfTriangleOptionBottom = getMaxAngleOfTriangle(triangleOptionBottom)+indexesRatioDiff*indexesRatioDiffCoefficient;
+        log.debug("top max: {}, bottom max: {}, bottom max with ratio correction: {}", maxAngleOfTriangleOptionTop, maxAngleOfTriangleOptionBottom-indexesRatioDiff*indexesRatioDiffCoefficient, maxAngleOfTriangleOptionBottom);
 
         if(maxAngleOfTriangleOptionBottom < maxAngleOfTriangleOptionTop) {
             log.info("getNextPoint() [TriangulationByAngle] end - next point is bottom point");
