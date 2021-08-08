@@ -21,11 +21,12 @@ public class EvenlyDistributedEquinumerous implements PointsDeterminationMethod 
         }
         int pointsNumber = points.size();
         int indexesRange = Math.round((float) (pointsNumber*pointsShownPercent)/100);
-        log.info("reducePoints() points number: {}, indexesRange: {}", pointsNumber, indexesRange);
+        double delta = (double) pointsNumber/indexesRange;
+        log.info("reducePoints() points number: {}, indexesRange: {}, delta: {}", pointsNumber, indexesRange, delta);
         List<LayerPoint> reducedPoints = IntStream.range(0, indexesRange)
                 .boxed()
-                .peek(index -> log.debug("before: {}, after: {}", index, (int)(index*100/pointsShownPercent)))
-                .map(index -> (int) (index*100/pointsShownPercent))
+                .peek(index -> log.debug("before: {}, after: {}", index, (int)(index*delta)))
+                .map(index -> (int) (index*delta))
                 .map(points::get)
                 .collect(Collectors.toList());
         log.info("reducePoints() end - points count after reduction: {}", reducedPoints.size());
