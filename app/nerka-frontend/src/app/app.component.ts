@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {
   AxesHelper,
   BufferGeometry,
-  Color,
+  Color, DoubleSide,
   Face3,
   Geometry,
   GridHelper,
@@ -67,7 +67,7 @@ export class AppComponent implements OnInit {
 
     this.light = new PointLight();
     this.light.intensity = 1;
-    this.light.decay = 2;
+    this.light.decay = 4;
     this.camera.add(this.light);
 
     this.renderer.render( this.scene, this.camera );
@@ -143,7 +143,8 @@ export class AppComponent implements OnInit {
     gridHelper.translateX(2500);
     gridHelper.translateZ(2500);
     this.scene.add(axesHelper, gridHelper);
-    this.scene.add(this.camera)
+    this.scene.add(this.camera);
+    // this.drawRelativePoints();
   }
 
   drawTriangles(triangles: Triangle[]) {
@@ -157,7 +158,7 @@ export class AppComponent implements OnInit {
       geometry.faces.push(face);
     })
     geometry.computeFaceNormals();
-    const mesh = new Mesh(geometry, new MeshStandardMaterial({color: 0x0000ff}))
+    const mesh = new Mesh(geometry, new MeshStandardMaterial({color: 0x8996ff, side: DoubleSide}))
     this.scene.add(mesh);
 
   }
@@ -173,6 +174,15 @@ export class AppComponent implements OnInit {
     const material = new PointsMaterial({color: 0x8d34ff, size: 10});
     const points = new Points(pointsGeometry, material)
     this.scene.add(points);
+  }
+
+  drawRelativePoints() {
+    // R (0, 0, 0)
+    this.scene.add(new Points(new BufferGeometry().setFromPoints([new Vector3(0,0,0)]), new PointsMaterial({color: 0xFF0000, size:150})));
+    // G (3000, 0, 0)
+    this.scene.add(new Points(new BufferGeometry().setFromPoints([new Vector3(3000,0,0)]), new PointsMaterial({color: 0x00FF00, size:150})));
+    // B (0, 3000, 0)
+    this.scene.add(new Points(new BufferGeometry().setFromPoints([new Vector3(0,0,3000)]), new PointsMaterial({color: 0x0000FF, size:150})));
   }
 
 }

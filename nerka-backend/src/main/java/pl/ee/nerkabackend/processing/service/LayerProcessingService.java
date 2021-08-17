@@ -47,7 +47,7 @@ public class LayerProcessingService {
         }
     }
 
-    public List<LayerPoint> getPoints(RawLayer kidneyLayer) {
+    public Layer getLayer(RawLayer kidneyLayer) {
         log.info("getPoints() start - layerName: {}", kidneyLayer.getName());
         int[][] layerData = kidneyLayer.getData();
         List<LayerPoint> points = new ArrayList<>();
@@ -59,8 +59,12 @@ public class LayerProcessingService {
                 }
             }
         }
+        if(kidneyLayer.getTranslation() != null) {
+            List<LayerPoint> translatedPoints = translatePoints(points, kidneyLayer.getTranslation());
+            return new Layer(translatedPoints, kidneyLayer.getName());
+        }
         log.info("getPoints() end - border points count: {}", points.size());
-        return points;
+        return new Layer(points, kidneyLayer.getName());
     }
 
     public List<LayerPoint> getOrderedPoints(RawLayer kidneyLayer) {

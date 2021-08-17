@@ -43,8 +43,8 @@ public class TriangulationByLengthSum extends AbstractTriangulationMethod {
         Triangle triangleOptionTop = new Triangle(topPoint, bottomPoint, nextTopPoint);
         Triangle triangleOptionBottom = new Triangle(topPoint, bottomPoint, nextBottomPoint);
         double lengthSumOfTriangleOptionTop = getTriangleEdgesLengthSum(triangleOptionTop);
-        double lengthSumOfTriangleOptionBottom = getTriangleEdgesLengthSum(triangleOptionBottom)+indexesRatioDiff*indexesRatioDiffCoefficient;
-        log.debug("top sum: {}, bottom sum: {}, bottom sum with ratio correction: {}", lengthSumOfTriangleOptionTop, lengthSumOfTriangleOptionBottom-indexesRatioDiff*indexesRatioDiffCoefficient, lengthSumOfTriangleOptionBottom);
+        double lengthSumOfTriangleOptionBottom = getTriangleEdgesLengthSum(triangleOptionBottom)-indexesRatioDiff*indexesRatioDiffCoefficient;
+        log.debug("top sum: {}, bottom sum: {}, bottom sum with ratio correction: {}", lengthSumOfTriangleOptionTop, lengthSumOfTriangleOptionBottom+indexesRatioDiff*indexesRatioDiffCoefficient, lengthSumOfTriangleOptionBottom);
 
         if (lengthSumOfTriangleOptionBottom < lengthSumOfTriangleOptionTop) {
             log.debug("getNextPoint() [TriangulationByLengthSum] end - next point is bottom point");

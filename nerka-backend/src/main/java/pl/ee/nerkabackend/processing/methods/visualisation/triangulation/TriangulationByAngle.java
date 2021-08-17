@@ -44,8 +44,8 @@ public class TriangulationByAngle extends AbstractTriangulationMethod {
         Triangle triangleOptionTop = new Triangle(topPoint, bottomPoint, nextTopPoint);
         Triangle triangleOptionBottom = new Triangle(topPoint, bottomPoint, nextBottomPoint);
         double maxAngleOfTriangleOptionTop = getMaxAngleOfTriangle(triangleOptionTop);
-        double maxAngleOfTriangleOptionBottom = getMaxAngleOfTriangle(triangleOptionBottom)+indexesRatioDiff*indexesRatioDiffCoefficient;
-        log.debug("top max: {}, bottom max: {}, bottom max with ratio correction: {}", maxAngleOfTriangleOptionTop, maxAngleOfTriangleOptionBottom-indexesRatioDiff*indexesRatioDiffCoefficient, maxAngleOfTriangleOptionBottom);
+        double maxAngleOfTriangleOptionBottom = getMaxAngleOfTriangle(triangleOptionBottom)-indexesRatioDiff*indexesRatioDiffCoefficient;
+        log.debug("top max: {}, bottom max: {}, bottom max with ratio correction: {}", maxAngleOfTriangleOptionTop, maxAngleOfTriangleOptionBottom+indexesRatioDiff*indexesRatioDiffCoefficient, maxAngleOfTriangleOptionBottom);
 
         if(maxAngleOfTriangleOptionBottom < maxAngleOfTriangleOptionTop) {
             log.info("getNextPoint() [TriangulationByAngle] end - next point is bottom point");

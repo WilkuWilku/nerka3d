@@ -9,6 +9,7 @@ import pl.ee.nerkabackend.processing.methods.intermediateLayers.IntermediateLaye
 import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.TriangulationService;
 import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.builder.TriangulationServiceBuilder;
 import pl.ee.nerkabackend.processing.model.Layer;
+import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 import pl.ee.nerkabackend.webservice.dto.ParametersDTO;
 

@@ -93,8 +93,9 @@ public class TestController {
 
     @PostMapping(value = "/layersFromFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     private ResponseEntity<List<Layer>> layersFromFiles(@RequestParam("files") MultipartFile[] files) {
-        List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
-                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 0.0);
+//        List<Layer> layers = kidneyProcessingService.getKidneyLayers(files,
+//                MethodTypes.KidneyVisualisationMethodType.TRIANGULATION, 0.0);
+        List<Layer> layers = kidneyProcessingService.getRawLayers(files);
         return ResponseEntity.ok(layers);
     }
 }

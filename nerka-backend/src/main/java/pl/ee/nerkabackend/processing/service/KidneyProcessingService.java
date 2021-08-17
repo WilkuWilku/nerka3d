@@ -7,8 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.ee.nerkabackend.exception.DataLoadingException;
 import pl.ee.nerkabackend.processing.DataLoader;
 import pl.ee.nerkabackend.processing.methods.MethodTypes;
-import pl.ee.nerkabackend.processing.model.KidneyVisualisationObject;
 import pl.ee.nerkabackend.processing.model.Layer;
+import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.RawLayer;
 
 import java.io.IOException;
@@ -81,5 +81,20 @@ public class KidneyProcessingService {
                 .collect(Collectors.toList());
         log.info("getProcessedLayers() end - successfully loaded layers: {} in [{} ms]", layers.size(), System.currentTimeMillis() - startTime);
         return layers;
+    }
+
+    public List<Layer> getRawLayers(MultipartFile[] uploadedFiles) {
+        List<Layer> layerPoints = Arrays.stream(uploadedFiles).parallel()
+                .map(file -> {
+                    try {
+                        RawLayer rawLayer = dataLoader.loadKidneyDataFromUploadedFile(file);
+                        return layerProcessingService.getLayer(rawLayer);
+                    } catch (DataLoadingException | IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                })
+                .collect(Collectors.toList());
+        return layerPoints;
     }
 }
