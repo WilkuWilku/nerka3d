@@ -2,6 +2,7 @@ package pl.ee.nerkabackend.report.model;
 
 import lombok.Builder;
 import lombok.Data;
+import pl.ee.nerkabackend.processing.methods.MethodTypes;
 
 import java.util.List;
 
@@ -10,5 +11,8 @@ import java.util.List;
 public class Report {
     private String identifier;
     private double targetRatio;
-    private List<Measurement> measurements;
+    private MethodTypes.TriangulationMethodType triangulationMethodType;
+    private Double indexesRatioDiffCoefficient;
+    private List<RatioMeasurement> ratioMeasurements;
+    private List<ComparisonValueMeasurement> comparisonValueMeasurements;
 }
