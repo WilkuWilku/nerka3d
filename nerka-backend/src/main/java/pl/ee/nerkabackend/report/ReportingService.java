@@ -10,6 +10,7 @@ import org.apache.poi.xddf.usermodel.XDDFLineProperties;
 import org.apache.poi.xddf.usermodel.XDDFPresetLineDash;
 import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import pl.ee.nerkabackend.report.model.ComparisonValueMeasurement;
 import pl.ee.nerkabackend.report.model.RatioMeasurement;
@@ -26,6 +27,9 @@ import static pl.ee.nerkabackend.constants.Constants.RESOURCES_DIR_PATH;
 @Service
 @Slf4j
 public class ReportingService {
+
+    @Value("${triangulation.reporting.first.records.skipped}")
+    private Integer firstRecordsSkipped;
 
     private final static int CURRENT_RATIO_ROW_NUMBER = 3;
     private final static int TARGET_RATIO_ROW_NUMBER = 4;
@@ -130,7 +134,7 @@ public class ReportingService {
                 .map(ComparisonValueMeasurement::getSelectedValue)
                 .collect(Collectors.toList());
         List<Double> currentRatios = report.getRatioMeasurements().stream()
-                .skip(20) // pierwsze wyliczane wartości są nieistotne i zbyt rozrzucone
+                .skip(firstRecordsSkipped) // pierwsze wyliczane wartości są nieistotne i zbyt rozrzucone
                 .map(RatioMeasurement::getCurrentRatio)
                 .collect(Collectors.toList());
 
@@ -206,6 +210,12 @@ public class ReportingService {
         cell = row.createCell(22);
         cell.setCellValue(report.getTargetRatio());
 
+        row = sheet.createRow(25);
+        cell = row.createCell(21);
+        cell.setCellValue("SKIP");
+        cell = row.createCell(22);
+        cell.setCellValue(firstRecordsSkipped);
+
         row = sheet.createRow(40);
         cell = row.createCell(21);
         cell.setCellValue("ZEROS");
@@ -259,7 +269,7 @@ public class ReportingService {
         XSSFDrawing drawing = sheet.createDrawingPatriarch();
         XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 33, 20, 60);
         XSSFChart chart = drawing.createChart(anchor);
-        chart.setTitleText("Correction values");
+        chart.setTitleText("Selected values and corrections");
         chart.setTitleOverlay(false);
 
         XDDFNumericalDataSource<Double> correctionValueSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
