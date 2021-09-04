@@ -1,6 +1,8 @@
 package pl.ee.nerkabackend.report;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -137,50 +139,64 @@ public class ReportingService {
                 .skip(firstRecordsSkipped) // pierwsze wyliczane wartości są nieistotne i zbyt rozrzucone
                 .map(RatioMeasurement::getCurrentRatio)
                 .collect(Collectors.toList());
+        StandardDeviation std = new StandardDeviation(false);
 
-        Row row = sheet.createRow(10);
+        Row row = sheet.createRow(8);
         Cell cell = row.createCell(21);
         cell.setCellValue("CORRECTION");
 
-        row = sheet.createRow(11);
+        row = sheet.createRow(9);
         cell = row.createCell(21);
         cell.setCellValue("MAX");
         cell = row.createCell(22);
-        cell.setCellValue(corrections.stream().max(Comparator.comparing(Double::doubleValue)).get());
+        cell.setCellValue(corrections.stream().max(Comparator.comparing(Double::doubleValue)).orElse(Double.NaN));
 
-        row = sheet.createRow(12);
+        row = sheet.createRow(10);
         cell = row.createCell(21);
         cell.setCellValue("MIN");
         cell = row.createCell(22);
-        cell.setCellValue(corrections.stream().min(Comparator.comparing(Double::doubleValue)).get());
+        cell.setCellValue(corrections.stream().min(Comparator.comparing(Double::doubleValue)).orElse(Double.NaN));
 
-        row = sheet.createRow(13);
+        row = sheet.createRow(11);
         cell = row.createCell(21);
         cell.setCellValue("AVG");
         cell = row.createCell(22);
         cell.setCellValue(corrections.stream().reduce(0.0, Double::sum)/corrections.size());
 
-        row = sheet.createRow(15);
+        row = sheet.createRow(12);
+        cell = row.createCell(21);
+        cell.setCellValue("STD");
+        cell = row.createCell(22);
+        cell.setCellValue(std.evaluate(corrections.stream().mapToDouble(Double::doubleValue).toArray()));
+
+        row = sheet.createRow(14);
         cell = row.createCell(21);
         cell.setCellValue("SELECTED VALUE");
 
-        row = sheet.createRow(16);
+        row = sheet.createRow(15);
         cell = row.createCell(21);
         cell.setCellValue("MAX");
         cell = row.createCell(22);
-        cell.setCellValue(selectedValues.stream().max(Comparator.comparing(Double::doubleValue)).get());
+        cell.setCellValue(selectedValues.stream().max(Comparator.comparing(Double::doubleValue)).orElse(Double.NaN));
 
-        row = sheet.createRow(17);
+        row = sheet.createRow(16);
         cell = row.createCell(21);
         cell.setCellValue("MIN");
         cell = row.createCell(22);
-        cell.setCellValue(selectedValues.stream().filter(v -> v > 0).min(Comparator.comparing(Double::doubleValue)).get());
+        cell.setCellValue(selectedValues.stream().filter(v -> v > 0).min(Comparator.comparing(Double::doubleValue)).orElse(Double.NaN));
 
-        row = sheet.createRow(18);
+        row = sheet.createRow(17);
         cell = row.createCell(21);
         cell.setCellValue("AVG");
         cell = row.createCell(22);
         cell.setCellValue(selectedValues.stream().filter(v -> v > 0).reduce(0.0, Double::sum)/selectedValues.stream().filter(v -> v > 0).count());
+
+        row = sheet.createRow(18);
+        cell = row.createCell(21);
+        cell.setCellValue("STD");
+        cell = row.createCell(22);
+        cell.setCellValue(std.evaluate(selectedValues.stream().mapToDouble(Double::doubleValue).toArray()));
+
 
         row = sheet.createRow(20);
         cell = row.createCell(21);
@@ -190,27 +206,33 @@ public class ReportingService {
         cell = row.createCell(21);
         cell.setCellValue("MAX");
         cell = row.createCell(22);
-        cell.setCellValue(currentRatios.stream().max(Comparator.comparing(Double::doubleValue)).get());
+        cell.setCellValue(currentRatios.stream().max(Comparator.comparing(Double::doubleValue)).orElse(Double.NaN));
 
         row = sheet.createRow(22);
         cell = row.createCell(21);
         cell.setCellValue("MIN");
         cell = row.createCell(22);
-        cell.setCellValue(currentRatios.stream().filter(v -> v > 0).min(Comparator.comparing(Double::doubleValue)).get());
+        cell.setCellValue(currentRatios.stream().filter(v -> v > 0).min(Comparator.comparing(Double::doubleValue)).orElse(Double.NaN));
 
         row = sheet.createRow(23);
         cell = row.createCell(21);
         cell.setCellValue("AVG");
         cell = row.createCell(22);
-        cell.setCellValue(currentRatios.stream().filter(v -> v > 0).reduce(0.0, Double::sum)/selectedValues.stream().filter(v -> v > 0).count());
+        cell.setCellValue(currentRatios.stream().filter(v -> v > 0).reduce(0.0, Double::sum)/currentRatios.stream().filter(v -> v > 0).count());
 
         row = sheet.createRow(24);
+        cell = row.createCell(21);
+        cell.setCellValue("STD");
+        cell = row.createCell(22);
+        cell.setCellValue(std.evaluate(currentRatios.stream().mapToDouble(Double::doubleValue).toArray()));
+
+        row = sheet.createRow(25);
         cell = row.createCell(21);
         cell.setCellValue("TARGET");
         cell = row.createCell(22);
         cell.setCellValue(report.getTargetRatio());
 
-        row = sheet.createRow(25);
+        row = sheet.createRow(26);
         cell = row.createCell(21);
         cell.setCellValue("SKIP");
         cell = row.createCell(22);
@@ -231,13 +253,13 @@ public class ReportingService {
         chart.setTitleOverlay(false);
 
         XDDFNumericalDataSource<Double> currentRatioSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(CURRENT_RATIO_ROW_NUMBER, CURRENT_RATIO_ROW_NUMBER, 0, report.getRatioMeasurements().size()));
+                new CellRangeAddress(CURRENT_RATIO_ROW_NUMBER, CURRENT_RATIO_ROW_NUMBER, 0, report.getRatioMeasurements().size()-1));
 
         XDDFNumericalDataSource<Double> targetRatioSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(TARGET_RATIO_ROW_NUMBER, TARGET_RATIO_ROW_NUMBER, 0, report.getRatioMeasurements().size()));
+                new CellRangeAddress(TARGET_RATIO_ROW_NUMBER, TARGET_RATIO_ROW_NUMBER, 0, report.getRatioMeasurements().size()-1));
 
         XDDFNumericalDataSource<Double> stepSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(STEP_ROW_NUMBER, STEP_ROW_NUMBER, 0, report.getRatioMeasurements().size()));
+                new CellRangeAddress(STEP_ROW_NUMBER, STEP_ROW_NUMBER, 0, report.getRatioMeasurements().size()-1));
 
         XDDFChartLegend legend = chart.getOrAddLegend();
         legend.setPosition(LegendPosition.TOP);
@@ -273,13 +295,13 @@ public class ReportingService {
         chart.setTitleOverlay(false);
 
         XDDFNumericalDataSource<Double> correctionValueSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(CORRECTION_VALUE_ROW_NUMBER, CORRECTION_VALUE_ROW_NUMBER, 0, report.getComparisonValueMeasurements().size()));
+                new CellRangeAddress(CORRECTION_VALUE_ROW_NUMBER, CORRECTION_VALUE_ROW_NUMBER, 0, report.getComparisonValueMeasurements().size()-1));
 
         XDDFNumericalDataSource<Double> selectedValueSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(SELECTED_VALUE_ROW_NUMBER, SELECTED_VALUE_ROW_NUMBER, 0, report.getComparisonValueMeasurements().size()));
+                new CellRangeAddress(SELECTED_VALUE_ROW_NUMBER, SELECTED_VALUE_ROW_NUMBER, 0, report.getComparisonValueMeasurements().size()-1));
 
         XDDFNumericalDataSource<Double> stepSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(STEP_ROW_NUMBER, STEP_ROW_NUMBER, 0, report.getRatioMeasurements().size()));
+                new CellRangeAddress(STEP_ROW_NUMBER, STEP_ROW_NUMBER, 0, report.getRatioMeasurements().size()-1));
 
         XDDFChartLegend legend = chart.getOrAddLegend();
         legend.setPosition(LegendPosition.TOP);
