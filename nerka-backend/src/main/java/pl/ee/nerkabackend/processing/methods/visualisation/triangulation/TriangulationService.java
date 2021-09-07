@@ -13,19 +13,21 @@ import pl.ee.nerkabackend.processing.methods.MethodTypes;
 import pl.ee.nerkabackend.processing.methods.correspondingpoints.selector.CorrespondingPointsSelector;
 import pl.ee.nerkabackend.processing.methods.visualisation.VisualisationMethod;
 import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.builder.TriangulationMethodBuilder;
-import pl.ee.nerkabackend.processing.methods.visualisation.triangulation.resolver.TriangulationMethodResolver;
 import pl.ee.nerkabackend.processing.model.CorrespondingPoints;
 import pl.ee.nerkabackend.processing.model.KidneyVisualisationObject;
 import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 import pl.ee.nerkabackend.report.ReportingService;
-import pl.ee.nerkabackend.report.model.Measurement;
+import pl.ee.nerkabackend.report.ReportingValuesContainer;
+import pl.ee.nerkabackend.report.model.ComparisonValueMeasurement;
+import pl.ee.nerkabackend.report.model.RatioMeasurement;
 import pl.ee.nerkabackend.report.model.Report;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.DoubleStream;
 
@@ -43,6 +45,9 @@ public class TriangulationService implements VisualisationMethod {
 
     @Autowired
     private TriangulationMethodBuilder triangulationMethodBuilder;
+
+    @Autowired
+    private ReportingValuesContainer reportingValuesContainer;
 
     @Value("${triangulation.method.type}")
     @Setter
@@ -81,7 +86,9 @@ public class TriangulationService implements VisualisationMethod {
         LayerPoint nextTopPoint = topPoints.get(topLayerIndex + 1);
         LayerPoint nextBottomPoint = bottomPoints.get(bottomLayerIndex + 1);
 
-        List<Measurement> measurements = new ArrayList<>();
+        List<RatioMeasurement> ratioMeasurements = new ArrayList<>();
+        reportingValuesContainer.setMeasurements(new HashMap<>());
+        reportingValuesContainer.getMeasurements().put(getLayersIdentifier(topLayer, bottomLayer), new ArrayList<>());
         int step = 0;
 
         AbstractTriangulationMethod triangulationMethod = triangulationMethodBuilder
@@ -93,18 +100,18 @@ public class TriangulationService implements VisualisationMethod {
             step++;
             double ratioDiffValue = calculateAdditionalValueFromLayersLengthRatio(topLayerIndex, bottomLayerIndex, layersPointsCount, layersLengthRatio);
             LayerPoint nextPoint = triangulationMethod.getNextPoint(currentTopPoint, currentBottomPoint,
-                    nextTopPoint, nextBottomPoint, ratioDiffValue);
+                    nextTopPoint, nextBottomPoint, ratioDiffValue, getLayersIdentifier(topLayer, bottomLayer));
             Triangle nextTriangle = new Triangle(currentTopPoint, currentBottomPoint, nextPoint);
             triangles.add(nextTriangle);
 
             if(isReportingEnabled) {
-                Measurement measurement = Measurement.builder()
+                RatioMeasurement ratioMeasurement = RatioMeasurement.builder()
                         .currentStep(step)
                         .topIndex(topLayerIndex)
                         .bottomIndex(bottomLayerIndex)
                         .currentRatio(topLayerIndex == 0 || bottomLayerIndex == 0 ? 0 : (double) topLayerIndex / bottomLayerIndex)
                         .build();
-                measurements.add(measurement);
+                ratioMeasurements.add(ratioMeasurement);
             }
 
             if (nextPoint.equals(nextTopPoint)) {
@@ -140,7 +147,10 @@ public class TriangulationService implements VisualisationMethod {
             Report report = Report.builder()
                     .identifier("test layers " + topLayer.getName() + " & " + bottomLayer.getName())
                     .targetRatio(layersLengthRatio)
-                    .measurements(measurements)
+                    .triangulationMethodType(triangulationMethodType)
+                    .indexesRatioDiffCoefficient(indexRatioDiffCoefficient)
+                    .ratioMeasurements(ratioMeasurements)
+                    .comparisonValueMeasurements(reportingValuesContainer.getMeasurements().get(getLayersIdentifier(topLayer, bottomLayer)))
                     .build();
             try {
                 String filename = "test-report-"+System.currentTimeMillis()+"-"+topLayer.getName().replace("/", "_") + "&" + bottomLayer.getName().replace("/", "_")+".xlsx";
@@ -192,5 +202,8 @@ public class TriangulationService implements VisualisationMethod {
         return (currentIndexesRatio - layersLengthRatio)*(topLayerIndex+bottomLayerIndex)/topAndBottomLayersLengthSum;
     }
 
+    private String getLayersIdentifier(Layer topLayer, Layer bottomLayer) {
+        return topLayer.getName()+"&"+bottomLayer.getName();
+    }
 
 }

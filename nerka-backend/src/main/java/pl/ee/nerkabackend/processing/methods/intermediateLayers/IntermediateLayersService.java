@@ -53,7 +53,7 @@ public class IntermediateLayersService {
             for (int j = 0; j < verticalLinesWithIntermediateLayers.size(); j++) {
                 layerPoints.add(verticalLinesWithIntermediateLayers.get(j).get(i));
             }
-            layersWithIntermediateLayers.add(new Layer(layerPoints, String.format("layer%s", i)));
+            layersWithIntermediateLayers.add(new Layer(layerPoints, String.format("%s~%s", layers.get(0).getName(), i)));
         }
 
         return layersWithIntermediateLayers;

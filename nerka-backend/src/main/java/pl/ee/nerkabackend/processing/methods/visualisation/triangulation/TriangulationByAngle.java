@@ -2,12 +2,14 @@ package pl.ee.nerkabackend.processing.methods.visualisation.triangulation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
+import pl.ee.nerkabackend.report.ReportingValuesContainer;
 
 import javax.annotation.PostConstruct;
 import java.util.stream.DoubleStream;
@@ -25,8 +27,11 @@ public class TriangulationByAngle extends AbstractTriangulationMethod {
         super.setDefaultIndexesRatioDiffCoefficient(defaultIndexesRatioDiffCoefficient);
     }
 
+    @Autowired
+    private ReportingValuesContainer reportingValuesContainer;
+
     @Override
-    public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint, LayerPoint nextTopPoint, LayerPoint nextBottomPoint, double indexesRatioDiff) {
+    public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint, LayerPoint nextTopPoint, LayerPoint nextBottomPoint, double indexesRatioDiff, String layersIdentifier) {
         log.info("getNextPoint() [TriangulationByAngle] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, coef: {}, indexesRatioDiff: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiffCoefficient, indexesRatioDiff);
 
         if(nextTopPoint == null && nextBottomPoint == null) {
@@ -34,9 +39,11 @@ public class TriangulationByAngle extends AbstractTriangulationMethod {
         }
         if(nextTopPoint == null) {
             log.debug("getNextPoint() [TriangulationByAngle] end - no top point found, next point is bottom point");
+            reportingValuesContainer.logValues(0, 0, layersIdentifier);
             return nextBottomPoint;
         }
         if(nextBottomPoint == null) {
+            reportingValuesContainer.logValues(0, 0, layersIdentifier);
             log.debug("getNextPoint() [TriangulationByAngle] end - no bottom point found, next point is top point");
             return nextTopPoint;
         }
@@ -49,9 +56,13 @@ public class TriangulationByAngle extends AbstractTriangulationMethod {
 
         if(maxAngleOfTriangleOptionBottom < maxAngleOfTriangleOptionTop) {
             log.info("getNextPoint() [TriangulationByAngle] end - next point is bottom point");
+            reportingValuesContainer.logValues(maxAngleOfTriangleOptionBottom+indexesRatioDiff*indexesRatioDiffCoefficient,
+                    indexesRatioDiff*indexesRatioDiffCoefficient, layersIdentifier);
             return nextBottomPoint;
         } else {
             log.info("getNextPoint() [TriangulationByAngle] end - next point is top point");
+            reportingValuesContainer.logValues(maxAngleOfTriangleOptionTop,
+                    indexesRatioDiff*indexesRatioDiffCoefficient, layersIdentifier);
             return nextTopPoint;
         }
     }

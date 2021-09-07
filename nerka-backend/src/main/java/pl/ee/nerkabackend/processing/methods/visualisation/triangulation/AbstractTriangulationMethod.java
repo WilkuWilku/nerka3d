@@ -10,7 +10,7 @@ public abstract class AbstractTriangulationMethod {
 
     public abstract LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint,
                             LayerPoint nextTopPoint, LayerPoint nextBottomPoint,
-                            double indexesRatioDiff);
+                            double indexesRatioDiff, String layersIdentifier);
 
     protected void setDefaultIndexesRatioDiffCoefficient(Double defaultValue) {
         this.indexesRatioDiffCoefficient = defaultValue;

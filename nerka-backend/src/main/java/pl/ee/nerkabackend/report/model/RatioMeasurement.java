@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Measurement {
+public class RatioMeasurement {
     private int currentStep;
     private int topIndex;
     private int bottomIndex;

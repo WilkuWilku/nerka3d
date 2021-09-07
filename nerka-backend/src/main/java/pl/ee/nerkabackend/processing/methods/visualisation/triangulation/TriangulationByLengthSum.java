@@ -2,12 +2,14 @@ package pl.ee.nerkabackend.processing.methods.visualisation.triangulation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 import pl.ee.nerkabackend.exception.TriangulationException;
 import pl.ee.nerkabackend.processing.model.LayerPoint;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
+import pl.ee.nerkabackend.report.ReportingValuesContainer;
 
 import javax.annotation.PostConstruct;
 
@@ -24,8 +26,11 @@ public class TriangulationByLengthSum extends AbstractTriangulationMethod {
         super.setDefaultIndexesRatioDiffCoefficient(defaultIndexesRatioDiffCoefficient);
     }
 
+    @Autowired
+    private ReportingValuesContainer reportingValuesContainer;
+
     @Override
-    public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint, LayerPoint nextTopPoint, LayerPoint nextBottomPoint, double indexesRatioDiff) {
+    public LayerPoint getNextPoint(LayerPoint topPoint, LayerPoint bottomPoint, LayerPoint nextTopPoint, LayerPoint nextBottomPoint, double indexesRatioDiff, String layersIdentifier) {
         log.info("getNextPoint() [TriangulationByLengthSum] start - topPoint: {}, bottomPoint: {}, nextTopPoint: {}, nextBottomPoint: {}, coef: {}, indexesRatioDiff: {}", topPoint, bottomPoint, nextTopPoint, nextBottomPoint, indexesRatioDiffCoefficient, indexesRatioDiff);
 
         if(nextTopPoint == null && nextBottomPoint == null) {
@@ -33,10 +38,12 @@ public class TriangulationByLengthSum extends AbstractTriangulationMethod {
         }
         if(nextTopPoint == null) {
             log.debug("getNextPoint() [TriangulationByLengthSum] end - no top point found, next point is bottom point");
+            reportingValuesContainer.logValues(0, 0, layersIdentifier);
             return nextBottomPoint;
         }
         if(nextBottomPoint == null) {
             log.debug("getNextPoint() [TriangulationByLengthSum] end - no bottom point found, next point is top point");
+            reportingValuesContainer.logValues(0, 0, layersIdentifier);
             return nextTopPoint;
         }
 
@@ -48,9 +55,13 @@ public class TriangulationByLengthSum extends AbstractTriangulationMethod {
 
         if (lengthSumOfTriangleOptionBottom < lengthSumOfTriangleOptionTop) {
             log.debug("getNextPoint() [TriangulationByLengthSum] end - next point is bottom point");
+            reportingValuesContainer.logValues(lengthSumOfTriangleOptionBottom+indexesRatioDiff*indexesRatioDiffCoefficient,
+                    indexesRatioDiff*indexesRatioDiffCoefficient, layersIdentifier);
             return nextBottomPoint;
         } else {
             log.debug("getNextPoint() [TriangulationByLengthSum] end - next point is top point");
+            reportingValuesContainer.logValues(lengthSumOfTriangleOptionTop,
+                    indexesRatioDiff*indexesRatioDiffCoefficient, layersIdentifier);
             return nextTopPoint;
         }
     }
