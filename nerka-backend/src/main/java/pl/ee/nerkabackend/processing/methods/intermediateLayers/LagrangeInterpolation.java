@@ -10,7 +10,7 @@ public class LagrangeInterpolation {
 
     public static ArrayList<LayerPoint> interpolate(double[] x, double[] y, double[] z, int layerMultiplier, int order) {
         ArrayList<LayerPoint> interpolatedPointVector = new ArrayList<>();
-        double yStep = (y[y.length - 1] - y[0]) / ((y.length - 1) * layerMultiplier + 1);
+        double yStep = (y[y.length - 1] - y[0]) / ((y.length - 1) * layerMultiplier);
         for (int i = 0; i < (y.length - 1) * layerMultiplier + 1; i++) {
             double currentY = y[0] + yStep * i;
             Pair<Integer,Integer> intervals = getIntervalIndices(y, currentY, order);

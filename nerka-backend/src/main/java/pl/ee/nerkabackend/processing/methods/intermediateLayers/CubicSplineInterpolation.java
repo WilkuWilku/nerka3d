@@ -14,7 +14,7 @@ public class CubicSplineInterpolation {
         PolynomialSplineFunction zInterpolationFunction = splineInterpolator.interpolate(y, z);
 
         ArrayList<LayerPoint> interpolatedPointVector = new ArrayList<>();
-        double yStep = (y[y.length - 1] - y[0]) / ((y.length - 1) * layerMultiplier + 1);
+        double yStep = (y[y.length - 1] - y[0]) / ((y.length - 1) * layerMultiplier);
         for (int i = 0; i < (y.length - 1) * layerMultiplier + 1; i++) {
             double currentY = y[0] + yStep * i;
             LayerPoint newPoint = new LayerPoint(

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class LinearInterpolation {
     public static ArrayList<LayerPoint> interpolate(double[] x, double[] y, double[] z, int layerMultiplier) {
         ArrayList<LayerPoint> interpolatedPointVector = new ArrayList<>();
-        double yStep = (y[y.length - 1] - y[0]) / ((y.length - 1) * layerMultiplier + 1);
+        double yStep = (y[y.length - 1] - y[0]) / ((y.length - 1) * layerMultiplier);
         int currentArraysIndex = 0;
         for (int i = 0; i < (y.length - 1) * layerMultiplier + 1; i++) {
             double currentY = y[0] + yStep * i;
