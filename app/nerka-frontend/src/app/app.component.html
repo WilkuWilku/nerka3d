@@ -36,8 +36,15 @@
           <select id="interpolationMethodSelect" [(ngModel)]="parameters.interpolationMethod">
             <option value="Linear">Linear</option>
             <option value="CubicSpline">Cubic Spline</option>
+            <option value="Lagrange">Lagrange</option>
           </select>
         </div>
+
+        <div *ngIf="parameters.interpolationMethod === 'Lagrange'" class="parameter-input">
+          <label htmlFor="lagrangianOrder">Rząd wielomianów Lagrange'a</label>
+          <input id="lagrangianOrder" min="1" max="50" type="number" [(ngModel)]="parameters.lagrangianOrder"/>
+        </div>
+
       </div>
       <div class="parameter-input">
         <label htmlFor="triangulationMethodSelect">Metoda triangulacji</label>

@@ -94,8 +94,9 @@ export class AppComponent implements OnInit {
       numberOfIntermediateLayers: 1,
       triangulationMethod: 'BY_POINTS_DISTANCE',
       pointsDeterminationMethod: 'EVENLY_DISTRIBUTED_EQUINUMEROUS',
-      indexesRatioDiffCoefficient: 0
-    }
+      indexesRatioDiffCoefficient: 0,
+      lagrangianOrder: 1
+    };
   }
 
   animate() {

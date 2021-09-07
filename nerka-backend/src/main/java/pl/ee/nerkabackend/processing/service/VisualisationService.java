@@ -39,7 +39,11 @@ public class VisualisationService {
                 layers = kidneyProcessingService.getKidneyLayers(files,
                         MethodTypes.KidneyVisualisationMethodType.TRIANGULATION_EQUINUMEROUS, parameters.getNumberOfPointsOnLayer());
                 layers = intermediateLayersService
-                        .getLayersWithIntermediateLayers(layers, parameters.getNumberOfIntermediateLayers(), parameters.getInterpolationMethod());
+                        .getLayersWithIntermediateLayers(
+                                layers,
+                                parameters.getNumberOfIntermediateLayers(),
+                                parameters.getLagrangianOrder(),
+                                parameters.getInterpolationMethod());
                 skipIndexRatioDiffCoefficient = true;
                 break;
             case EVENLY_DISTRIBUTED:

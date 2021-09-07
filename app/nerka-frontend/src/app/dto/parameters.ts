@@ -6,4 +6,5 @@ export class Parameters {
   triangulationMethod: string;
   pointsDeterminationMethod: string;
   indexesRatioDiffCoefficient: number;
+  lagrangianOrder: number;
 }

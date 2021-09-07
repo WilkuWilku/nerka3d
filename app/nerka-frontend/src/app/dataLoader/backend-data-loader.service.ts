@@ -41,6 +41,7 @@ export class BackendDataLoaderService {
     formData.append("pointsDeterminationMethod", parameters.pointsDeterminationMethod);
     formData.append("displayedPointsPercent", parameters.displayedPointsPercent);
     formData.append("indexesRatioDiffCoefficient", parameters.indexesRatioDiffCoefficient);
+    formData.append("lagrangianOrder", parameters.lagrangianOrder);
     return this.http.post<Triangle[]>("/api/trianglesFromFiles", formData);
   }
 

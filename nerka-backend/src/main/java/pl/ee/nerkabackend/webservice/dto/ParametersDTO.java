@@ -9,6 +9,7 @@ public class ParametersDTO {
     private double displayedPointsPercent;
     private int numberOfPointsOnLayer;
     private int numberOfIntermediateLayers;
+    private int lagrangianOrder;
     private IntermediateLayersService.InterpolationType interpolationMethod;
     private MethodTypes.TriangulationMethodType triangulationMethod;
     private MethodTypes.PointsDeterminationMethodType pointsDeterminationMethod;
