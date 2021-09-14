@@ -16,6 +16,10 @@ public class LayerPoint {
         this.height = point.getHeight();
     }
 
+    public LayerPoint() {
+
+    }
+
     @Override
     public String toString() {
         return "LayerPoint(" + x +

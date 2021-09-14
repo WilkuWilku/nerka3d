@@ -14,7 +14,6 @@ public class LagrangeInterpolation {
         for (int i = 0; i < (y.length - 1) * layerMultiplier + 1; i++) {
             double currentY = y[0] + yStep * i;
             Pair<Integer,Integer> intervals = getIntervalIndices(y, currentY, order);
-            System.out.println(intervals.getFirst() + " " + intervals.getSecond());
             double[] subY = Arrays.copyOfRange(y, intervals.getFirst(), intervals.getSecond());
             double[] subX = Arrays.copyOfRange(x, intervals.getFirst(), intervals.getSecond());
             double[] subZ = Arrays.copyOfRange(z, intervals.getFirst(), intervals.getSecond());
@@ -54,7 +53,6 @@ public class LagrangeInterpolation {
             } else if (currentY <= y[indiceFrom+order] && currentY >= y[indiceFrom]) {
                 return new Pair<>(indiceFrom, indiceFrom + order + 1);
             }
-            //System.out.println(currentY + " " + y[y.length - 1] + " " + y[y.length - order - 1] + " " + indiceFrom + " " + y.length);
         }
         System.out.println("This should have been never reached. Interval not found");
         return null;

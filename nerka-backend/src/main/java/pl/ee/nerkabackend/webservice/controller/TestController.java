@@ -14,6 +14,7 @@ import pl.ee.nerkabackend.processing.model.Layer;
 import pl.ee.nerkabackend.processing.model.triangulation.Triangle;
 import pl.ee.nerkabackend.processing.service.KidneyProcessingService;
 import pl.ee.nerkabackend.processing.service.VisualisationService;
+import pl.ee.nerkabackend.report.IntermediateLayersTestService;
 import pl.ee.nerkabackend.webservice.dto.ParametersDTO;
 
 import java.util.ArrayList;
@@ -29,7 +30,14 @@ public class TestController {
     @Autowired
     private VisualisationService visualisationService;
 
+    @Autowired
+    private IntermediateLayersTestService intermediateLayersTestService;
 
+    @GetMapping("/test")
+    private ResponseEntity test() {
+
+        return ResponseEntity.ok(intermediateLayersTestService.timeTestInterpolationMethods());
+    }
     @GetMapping("/layers")
     private ResponseEntity<List<Layer>> getLayers() {
         List<String> layersToLoad = List.of(

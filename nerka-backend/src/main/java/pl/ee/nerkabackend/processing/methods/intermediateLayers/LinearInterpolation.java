@@ -11,7 +11,7 @@ public class LinearInterpolation {
         int currentArraysIndex = 0;
         for (int i = 0; i < (y.length - 1) * layerMultiplier + 1; i++) {
             double currentY = y[0] + yStep * i;
-            if (currentY > y[currentArraysIndex + 1]) {
+            if (currentY -1 > y[currentArraysIndex + 1]) {
                 currentArraysIndex++;
             }
             LayerPoint newPoint = new LayerPoint(
